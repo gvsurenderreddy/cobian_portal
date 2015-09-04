@@ -1,0 +1,9 @@
+*.log
+*.pot
+*.pyc
+*.pyo
+settings.py
+db.*
+media/
+.DS_Store
+.idea/

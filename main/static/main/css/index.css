@@ -1,0 +1,14 @@
+img {
+    margin-bottom: 10px;
+}
+.form-horizontal .form-group {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+#rep_view,
+#dealer_view,
+#action_view,
+#button_view {
+	display: none;
+}

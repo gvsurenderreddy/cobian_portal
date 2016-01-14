@@ -1,0 +1,23 @@
+.eula-container {
+	width: 600px;
+	height: 400px;
+	margin: 25px auto;
+	padding: 25px;
+	overflow: auto;
+	border: 1px solid #d8d8d8;
+	border-radius: 5px;
+}
+
+.button-container {
+	width: 600px;
+	height: 25px;
+	margin: 25px auto;
+	text-align: center;
+}
+
+.eula-content {
+	font-size: 12px;
+}
+.eula-content li {
+	margin-top: 10px;
+}

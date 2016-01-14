@@ -1,16 +1,17 @@
-from django.utils.translation import ugettext, ugettext_lazy as _
 from django.db import models
 from datetime import datetime
-     
+
+
 class ProductItem(models.Model):
-    product_style = models.ForeignKey("ProductStyle", verbose_name=_("Product Style"), related_name='product_items', blank=True, null=True)
-    item_number = models.CharField(_("Item Number"), max_length=50, blank=True)
-    description = models.CharField(_("Description"), max_length=50, blank=True)
+    product_style = models.ForeignKey("ProductStyle", verbose_name="Product Style",
+                                      related_name='product_items', blank=True, null=True)
+    item_number = models.CharField("Item Number", max_length=50, blank=True, null=True)
+    description = models.CharField("Description", max_length=50, blank=True, null=True)
     image_path = models.ImageField(upload_to="product_images", blank=True, null=True)
     available = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return "%s - %s" % (self.item_number, self.description)
+        return "{} - {}".format(self.item_number, self.description)
         
     def convert_to_dict(self):
         image_path = None

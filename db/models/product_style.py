@@ -1,12 +1,12 @@
-from django.utils.translation import ugettext, ugettext_lazy as _
 from django.db import models
-     
+
+
 class ProductStyle(models.Model):
-    style_sku = models.CharField(_("Style Sku"), max_length=50, blank=True)
-    style = models.CharField(_("Style"), max_length=50, blank=True)
+    style_sku = models.CharField("Style Sku", max_length=50, blank=True, null=True)
+    style = models.CharField("Style", max_length=50, blank=True, null=True)
 
     def __str__(self):
-        return "%s - %s" % (self.style_sku, self.style)
+        return "{} - {}".format(self.style_sku, self.style)
         
     def convert_to_dict(self):
         return {

@@ -1,0 +1,30 @@
+#product_item_grid {
+    margin-top: 10px;
+}
+
+#order_add_submit {
+    display: none;
+}
+
+.list-group-item {
+    height: 50px;
+}
+
+.control-label {
+    margin-left: 5px;
+}
+
+select.form-control {
+    width: 250px;
+}
+
+input.form-control {
+    width: 70px;
+    display: inline;
+}
+
+input {
+    text-align: center;
+}
+
+

@@ -1,0 +1,31 @@
+.grid-container {
+    margin: 20px 0;
+}
+
+select.form-control {
+    width: auto;
+}
+
+#accept_selected {
+	margin-left: 15px;
+}
+
+#grid {
+    margin-top: 20px;
+}
+
+#grid_info {
+	float: left;
+	width: 30%;
+	height: 32px;
+	font-size: 12px;
+	line-height: 32px;
+	margin: 15px 0 0 5px;
+}
+#grid_paginator {
+	float: right;
+	width: 50%;
+	height: 32px;
+	margin-top: 15px;
+	display: none;
+}

@@ -1,0 +1,68 @@
+.panel-title {
+	font-size: 13px;
+	line-height: 13px;
+	font-weight: bold;
+}
+.panel-title .status {
+	float: right;
+}
+
+.error-message {
+    margin-left: 10px;
+    color: red;
+}
+
+.help-block {
+    margin-left: 10px;
+    color: red;
+}
+
+.modal-content .form-horizontal .form-group {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.backgrid {
+	font-size: 11px;
+}
+
+.backgrid tr td:nth-child(1) {
+    width: 130px;
+    text-align: center;
+}
+
+.backgrid tr td:nth-child(2) {
+    width: 200px;
+    text-align: center;
+}
+
+.backgrid tr td:nth-child(4) {
+    width: 100px;
+    text-align: center;
+}
+
+.backgrid tr td:nth-child(5) {
+    width: 100px;
+    text-align: center;
+}
+
+#grid_helper {
+	font-size: 12px;
+	height: 25px;
+}
+
+#grid_container {
+}
+
+#grid-wrapper {
+    border: 1px solid #ddd;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+    margin: 15px 0;
+    padding: 0;
+}
+
+#button_view .btn {
+    margin-left: 10px;
+}

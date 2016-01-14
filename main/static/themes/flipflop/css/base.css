@@ -1,0 +1,41 @@
+/*
+.navbar-default {
+	background-color: #fcb134;
+	border-color: #fcb134;
+	border: 0;
+}
+
+#footer {
+  background-color: #00adef;
+}
+
+#footer .text-muted {
+  color: #eee;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-nav > li > a {
+	color: #444;
+}
+
+.navbar-default .navbar-nav > .active > a, 
+.navbar-default .navbar-nav > .active > a:hover, 
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #fff;
+  background-color: #000;
+}
+
+.navbar-default .navbar-nav > .open > a, 
+.navbar-default .navbar-nav > .open > a:hover, 
+.navbar-default .navbar-nav > .open > a:focus {
+	color: #eee;
+	background-color: #666;
+}
+*/
+
+.top-branding {
+	background-color: #fcb134;
+}
+.bottom-branding {
+	background-color: #00adef;
+}

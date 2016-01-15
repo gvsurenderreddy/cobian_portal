@@ -1,0 +1,55 @@
+.menu-container {
+    margin-bottom: 15px;
+    font-size: 11px;
+}
+.menu-container .menu-item {
+    float:left;
+    margin: 5px 10px 0 0;
+    display: none;
+}
+.menu-container .custom-select select,
+.menu-container input {
+    height: 22px;
+	font-size: 11px;
+	color: #7f8c8c;
+}
+.menu-container .custom-select:after {
+    height: 22px;
+    line-height: 22px;
+}
+
+.menu-container .menu-item input {
+    display: inline-block;
+    width: 200px;
+}
+
+.backgrid {
+	font-size: 11px;
+}
+
+#rep_view,
+#dealer_view {
+	display: none;
+}
+		
+#grid_helper {
+	font-size: 12px;
+	height: 25px;
+}
+
+#grid_container {
+    display: none;
+}
+
+#grid-wrapper {
+    border: 1px solid #ddd;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+    margin: 15px 0;
+    padding: 0;
+}
+
+.backgrid .total {
+	text-align: right;
+}

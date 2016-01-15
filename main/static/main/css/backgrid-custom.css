@@ -1,0 +1,201 @@
+.backgrid {
+	/*min-height: 321px;*/
+    background-color: #fff;
+	border-collapse: separate;
+    border: 0px solid #ddd;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+	font-size: 12px;
+}
+
+.backgrid .empty td {
+	display: table-cell;
+}
+
+.backgrid thead tr,
+.backgrid thead th {
+	background-color: transparent;
+	height: 50px;
+}
+.backgrid tbody tr:nth-child(odd) {
+	background: #f9f9f9;
+}
+.backgrid th, 
+.backgrid td {
+	border-left: 1px solid #ddd;
+	border-bottom: 0px none;
+	padding: 5px 8px;
+}
+.backgrid th:first-child, 
+.backgrid td:first-child {
+	border-left: 0px none;
+	border-bottom: 0px none;
+}
+.backgrid tfoot td {
+	border-top: 1px solid #ddd;
+	background-color: transparent;
+}
+.backgrid-border .backgrid thead th:first-child {
+	border-left: 1px #ddd solid;
+	-webkit-border-top-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	border-top-left-radius: 5px;
+}
+.backgrid-border .backgrid thead th {
+	border-top: 1px #ddd solid;
+}
+.backgrid-border .backgrid thead th:last-child {
+	border-right: 1px #ddd solid;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-right-radius: 5px;
+}
+.backgrid-border .backgrid td:first-child {
+	border-left: 1px #ddd solid;
+}
+.backgrid-border .backgrid td:last-child {
+	border-right: 1px #ddd solid;
+}
+.backgrid-border .backgrid tr:last-child td:first-child {
+	border-bottom: 1px #ddd solid;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	border-bottom-left-radius: 5px;
+}
+.backgrid-border .backgrid tr:last-child td {
+	border-bottom: 1px #ddd solid;
+}
+.backgrid-border .backgrid tr:last-child td:last-child {
+	border-bottom: 1px #ddd solid;
+	-webkit-border-bottom-right-radius: 5px;
+	-moz-border-radius-bottomright: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+.backgrid-selectable .backgrid tbody tr {
+	cursor: pointer;
+}
+.backgrid-selectable .backgrid tbody tr:hover {
+	background-color: #eceeef;
+	color: #000;
+}
+
+#backgrid_filter {
+	width: 220px;
+	height: 29px;
+	line-height: 29px;
+}
+#backgrid_filter input[type="search"] {
+	float: left;
+	font-size: 12px;
+	width: 120px;
+	height: 18px;
+}
+
+.backgrid-filter.form-search {
+	height: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+	-webkit-padding-start: 0;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	text-align: left;
+	padding: 0 5px 0 5px;
+}
+
+.backgrid-filter input[type="search"] {
+	width: 90%;
+	font-size: 12px;
+	outline: none;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+.backgrid-filter .search {
+	display: none;
+}
+.backgrid-filter .clear {
+	float: right;
+	font-weight: normal;
+}
+
+.backgrid-paginator ul {
+	float: right;
+	margin: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+	-webkit-padding-start: 0;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.backgrid-paginator ul > li > a[title=First],
+.backgrid-paginator ul > li > a[title=Previous] {
+	border-right: 1px solid #ddd;
+}
+.backgrid-paginator ul > li > a[title=Next],
+.backgrid-paginator ul > li > a[title=Last] {
+	border-left: 1px solid #ddd;
+}
+
+.backgrid-paginator ul > li > a[title~=Page] {
+	background-color: #f5f5f5;
+	color: #f5f5f5;
+    width: 20px;
+    height: 20px;
+	line-height: 20px;
+	font-size: 12px;
+	margin: 5px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+}
+.backgrid-paginator ul > li.active > a[title~=Page],
+.backgrid-paginator ul > li > a[title~=Page]:hover {
+	color: #999;
+}
+
+.backgrid-paginator ul > li > a[title=First],
+.backgrid-paginator ul > li > a[title=Previous],
+.backgrid-paginator ul > li > a[title=Next],
+.backgrid-paginator ul > li > a[title=Last] {
+	color: #ddd;
+	background-size: 16px 16px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.backgrid-paginator ul > li > a[title=First]:hover,
+.backgrid-paginator ul > li > a[title=Previous]:hover,
+.backgrid-paginator ul > li > a[title=Next]:hover,
+.backgrid-paginator ul > li > a[title=Last]:hover {
+	color: transparent;
+}
+
+.backgrid th.sortable > a:hover {
+	text-decoration: none;
+}
+
+
+.backgrid th.sortable > a > b.sort-caret,
+.backgrid th.sortable > a > b.sort-caret {
+	width: 10px;
+	height: 10px;
+	border: none !important;
+	background-size: 10px 10px;
+	background-repeat: no-repeat;
+	background-position: center;
+	vertical-align: baseline;
+}
+
+.backgrid th.sortable.ascending > a > b.sort-caret {
+	background-image: url('/static/v2/img/arrow_up.svg');
+}
+
+.backgrid th.sortable.descending > a > b.sort-caret {
+	background-image: url('/static/v2/img/arrow_down.svg');
+}

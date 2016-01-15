@@ -1,0 +1,27 @@
+.filter form {
+    margin: 0;
+}
+
+.media-file p.title {
+    font-size: 16px;
+    font-style: italic;
+    margin-top: 7px;
+}
+.media-file p.tags {
+    font-size: 12px;
+    font-style: italic;
+    color: #999;
+}
+
+select.form-control {
+    width: auto;
+}
+
+.panel-heading {
+    text-align: center;
+    font-size: 14px;
+}
+.panel-footer {
+    text-align: center;
+    font-size: 11px;
+}

@@ -1,0 +1,144 @@
+html,
+body {
+    font-family: "proxima_nova_rgregular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	color: #666;
+    height: 100%;
+}
+
+strong {
+	font-family: "proxima_nova_rgbold";
+}
+.notifications {
+    margin: 5px 0;
+}
+.notifications .label {
+    font-size: 12px;
+}
+
+.btn {
+    /*font-size: 12px;*/
+}
+
+.form-control {
+    height: 30px;
+}
+
+.navbar-brand {
+  padding: 3px 15px;
+}
+
+#loading_dim {}
+
+#loading_overlay {}
+
+/* Wrapper for page content to push down footer */
+#wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    /* Negative indent footer by its height */
+    margin: 0 auto -60px;
+    /* Pad bottom by footer height */
+    padding: 0 0 60px;
+}
+
+.top-branding {
+	height: 5px;
+	background-color: #000;
+}
+.bottom-branding {
+	height: 5px;
+	background-color: #8dc73f;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+    height: 55px;
+    background-color: #f5f5f5;
+}
+
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 767px) {
+  #footer {
+      margin-left: -20px;
+      margin-right: -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+  }
+}
+
+#wrapper > .container {
+  /*padding: 60px 15px 0;*/
+  width: 100%;
+}
+.container .credit {
+  margin: 20px 0;
+}
+
+.breadcrumb {
+    background-color: transparent;
+}
+
+.form-control {
+    #7f8c8c;
+}
+
+/* CUSTOM SELECT */
+label.custom-select {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-select select {
+    display: inline-block;
+    border: 1px solid #ddd;
+    padding: 4px 3px 3px 5px;
+    margin: 0;
+    font: inherit;
+	font-weight: normal;
+	color: #7f8c8c;
+    outline:none; /* remove focus ring from Webkit */
+    line-height: 1;
+    background: #fff;
+	height: 30px;
+    
+    -webkit-appearance:none; /* remove the strong OSX influence from Webkit */
+    
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+.custom-select select[disabled] {
+	background: #d8d8d8;
+}
+
+/* for Webkit's CSS-only solution */
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+    .custom-select select {
+        padding-right:30px;    
+    }
+}
+
+/* Select arrow styling */
+.custom-select:after {
+    content: "▼";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 60%;
+	height: 30px;
+	line-height: 30px;
+    padding: 0 7px;
+    background: #fff;
+    color: #ccc;
+    
+    pointer-events:none;
+	
+    border: 1px solid #ddd;
+    -webkit-border-radius: 0 4px 4px 0;
+    -moz-border-radius: 0 4px 4px 0;
+    border-radius: 0 4px 4px 0;
+}

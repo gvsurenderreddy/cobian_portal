@@ -1,0 +1,47 @@
+.filter-container {
+
+}
+
+.grid-container {
+    margin: 20px 0;
+}
+
+#document_grid {
+    margin-top: 20px;
+}
+
+#document_info {
+	float: left;
+	width: 30%;
+	height: 32px;
+	font-size: 12px;
+	line-height: 32px;
+	margin: 15px 0 0 5px;
+}
+#document_paginator {
+	float: right;
+	width: 50%;
+	height: 32px;
+	margin-top: 15px;
+	display: none;
+}
+
+.filter-range,
+.form-inline .form-control.filter-range {
+    display: none;
+}
+.form-control {
+    width: 220px;
+}
+
+label {
+    margin-left: 15px;
+}
+
+.daterangepicker .ranges {
+    width: 200px;
+}
+
+.progress-bar {
+	width: 0%;
+}

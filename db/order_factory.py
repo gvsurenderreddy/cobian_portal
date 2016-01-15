@@ -223,9 +223,6 @@ def send_order(order_number):
 
             if settings.ENVIRONMENT == "LOCAL":
                 returnValue = True
-                print "************ send_order - LOCAL ************"
-                print xmlData
-                print "*******************************"
             else:
                 client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
                 returnValue = client.service.SendFile(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, xmlData, fileName)
@@ -233,7 +230,7 @@ def send_order(order_number):
             logger.error("Failed to send order #%s to ebridge: Invalid Order!", order_number)
             returnValue = False
 
-    except Exception, e:
+    except Exception as e:
         logger.error("Failed to send order #%s to ebridge: %s", order_number, e)
         returnValue = False
 
@@ -248,13 +245,13 @@ def get_pre_book_date(order):
         option = DataOption.objects.filter(option_type="PRE-BOOK", active=True).all().order_by("sort_order", "description")[0]
         date_object = datetime.strptime('%s 12:01AM' % (option.value), '%m/%d/%Y %I:%M%p')
         return_date = "%sT00:00:01" % (date_object.strftime("%Y-%m-%d"))
-    except Exception, e:
+    except Exception as e:
         pass
         
     try:
         date_object = datetime.strptime('%s 12:01AM' % (order.pre_book_option), '%m/%d/%Y %I:%M%p')
         return_date = "%sT00:00:01" % (date_object.strftime("%Y-%m-%d"))
-    except Exception, e:
+    except Exception as e:
         pass
     
     return return_date
@@ -265,7 +262,7 @@ def get_default_data_option(option_type):
     # Get first pre-book option as default date
     try:
         option = DataOption.objects.filter(option_type=option_type, active=True).all().order_by("sort_order", "description")[0]
-    except Exception, e:
+    except Exception as e:
         pass
 
     return option.value

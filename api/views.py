@@ -15,10 +15,7 @@ from main.utils import make_both_emails, send_email_safe, make_html_email, send_
 import csv
 
 # JSON
-try:
-    import simplejson as json
-except Exception, e:
-    import json
+import json
 
 # SUDS
 from suds.client import Client
@@ -49,7 +46,7 @@ def api_dealers(request):
             for dealer in dealers:
                 return_list.append(dealer.convert_to_dict())
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_dealers: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -61,7 +58,7 @@ def api_dealer(request, dealer_id):
         dealer = UserProfile.objects.get(pk=dealer_id)
         return_object = dealer.convert_to_dict()
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_dealer: %s" % (e))
 
     return HttpResponse(json.dumps(return_object), mimetype="application/json")
@@ -90,7 +87,7 @@ def ebridge_documents(request):
             end_date = datetime.strptime(request.GET.get("end"), '%Y-%m-%d')
             toDate = datetime.strptime('%s/%s/%s 11:59PM' % (end_date.month, end_date.day, end_date.year),
                                        '%m/%d/%Y %I:%M%p')
-        except Exception, e:
+        except Exception as e:
             fromDate = datetime.strptime('%s/%s/%s 12:01AM' % (dateNow.month, dateNow.day, dateNow.year),
                                          '%m/%d/%Y %I:%M%p')
             toDate = datetime.strptime('%s/%s/%s 11:59PM' % (dateNow.month, dateNow.day, dateNow.year),
@@ -125,7 +122,7 @@ def ebridge_documents(request):
                     "doc_date": document.get("doc_date"),
                     "flag": 0
                 })
-    except Exception, e:
+    except Exception as e:
         logger.error("ebridge_documents: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -197,7 +194,7 @@ def get_document_list(doc_type, status="New", date_range="year"):
                     "tran_datetime": document.get("tran_datetime"),
                     "doc_date": document.get("doc_date")
                 })
-    except Exception, e:
+    except Exception as e:
         logger.error("get_document_list: %s" % (e))
 
     return return_list
@@ -268,7 +265,7 @@ def get_document_product(doc_sys_no):
                 "inventory": inventory,
             }
 
-    except Exception, e:
+    except Exception as e:
         logger.error("get_document_product: %s" % (e))
 
     return return_object
@@ -332,11 +329,11 @@ def import_document_product(document_product):
                                          wholesale=wholesale, msrp=msrp, active=active)
                 product_sku.save()
 
-            except Exception, e:
+            except Exception as e:
                 logger.error("import_document_product: %s" % (e))
                 return_value = "Error parsing sku %s: %s" % (sku, e)
 
-        except Exception, e:
+        except Exception as e:
             logger.error("import_document_product: %s" % (e))
             return_value = "Error importing %s : %s (%s)" % (sku, e, type(e))
     else:
@@ -469,7 +466,7 @@ def get_document_partner(doc_sys_no):
                 "billToCountry": billToCountry,
             }
 
-    except Exception, e:
+    except Exception as e:
         logger.error("get_document_partner: %s" % (e))
 
     return return_object
@@ -493,7 +490,7 @@ def import_document_partner(document_partner):
 
             partner_exists = True
 
-        except Exception, e:
+        except Exception as e:
             create_partner = True
 
         if create_partner:
@@ -511,7 +508,7 @@ def import_document_partner(document_partner):
                     user_profile.save()
                     partner_exists = True
 
-                except Exception, e:
+                except Exception as e:
                     return_value = "Import partner (%s) : %s" % (document_partner["account_id"], e)
             else:
                 return_value = "No account_id or name"
@@ -523,7 +520,7 @@ def import_document_partner(document_partner):
                 for address in address_list:
                     address.delete()
 
-            except Exception, e:
+            except Exception as e:
                 pass
 
             # Import BillTo address...
@@ -539,7 +536,7 @@ def import_document_partner(document_partner):
                                                postal_code=document_partner["billToPostalCode"][:9],
                                                country=document_partner["billToCountry"][:30])
                     user_address.save()
-                except Exception, e:
+                except Exception as e:
                     pass
 
             # Import ShipTo addresses...        
@@ -551,7 +548,7 @@ def import_document_partner(document_partner):
                     try:
                         user_address = UserAddress.objects.get(user_profile=user_profile, address_type="SHIPTO",
                                                                address_id=ship_to["shipToAddressId"][:200])
-                    except Exception, e:
+                    except Exception as e:
                         try:
                             user_address = UserAddress(user_profile=user_profile, address_type="SHIPTO",
                                                        name=ship_to["shipToName"][:200],
@@ -562,10 +559,10 @@ def import_document_partner(document_partner):
                                                        postal_code=ship_to["shipToPostalCode"][:9],
                                                        country=ship_to["shipToCountry"][:30])
                             user_address.save()
-                        except Exception, e:
+                        except Exception as e:
                             pass
 
-    except Exception, e:
+    except Exception as e:
         return_value = "Rep not found (%s) : %s" % (document_partner["rep_id"], e)
 
     return return_value
@@ -580,7 +577,7 @@ def delete_document_list(doc_sys_list):
         if isinstance(returnValue, unicode):
             returnValue = returnValue.encode("utf-8")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("delete_document_list: %s" % (e))
         return_flag = False
 
@@ -725,7 +722,7 @@ def api_model_inventory_list(request, dealer_id):
 
         return HttpResponse(json.dumps(return_list), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_dealer_model_inventory: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -740,7 +737,7 @@ def api_model_inventory_create(request, dealer_id):
 
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_dealer_model_inventory: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -771,7 +768,7 @@ def api_model_inventory(request, dealer_id, model_inventory_id):
             model_json = json.loads(request.body)
             return_object = model_inventory.convert_to_dict()
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_model_inventory: %s" % (e))
         return HttpResponseServerError("Error getting model data!")
 
@@ -793,10 +790,10 @@ def api_inventory(request):
                         "sku": row[0],
                         "inStock": int(row[1])
                     })
-                except Exception, e:
+                except Exception as e:
                     pass
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_inventory: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -876,7 +873,7 @@ def api_orders(request):
             # print order_dict
             return_list.append(order_dict)
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_orders: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -898,7 +895,7 @@ def api_order(request, order_id):
         if request.method == "PATCH":
             return_object = order_duplicate(order_id)
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order: %s" % (e))
         return HttpResponseServerError("Error getting order data!")
 
@@ -913,7 +910,7 @@ def api_order_details(request, order_id):
         for order_detail in order_details:
             return_object.append(order_detail.convert_to_dict())
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_details: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
@@ -927,7 +924,7 @@ def api_order_detail(request, order_id, order_detail_id):
         order_detail = OrderDetail.objects.get(pk=order_detail_id)
         return_object = order_detail.convert_to_dict()
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_details: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
@@ -956,10 +953,10 @@ def api_order_data(request, order_id):
                     product_style_id = product_style_get_id(style_sku)
                     return_object["styles"].append(product_style_detail(product_style_id))
 
-            except Exception, e:
+            except Exception as e:
                 pass
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_data: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
@@ -1002,7 +999,7 @@ def api_order_new(request):
             order.billto_state = billto_address.state
             order.billto_postal_code = billto_address.postal_code
             order.billto_country = billto_address.country
-        except Exception, e:
+        except Exception as e:
             pass
 
         try:
@@ -1031,7 +1028,7 @@ def api_order_new(request):
 
         return HttpResponse(json.dumps({"id": order.pk}), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_new: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1042,7 +1039,7 @@ def api_order_duplicate(request):
         return_object = order_duplicate(order_id)
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_duplicate: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1067,18 +1064,18 @@ def api_order_save(request, order_id):
             try:
                 if valid_date(order_dict["preBookDate"]):
                     order.prebook_date = parse(order_dict["preBookDate"])
-            except Exception, e:
+            except Exception as e:
                 pass
 
             try:
                 if valid_date(order_dict["cancelDate"]):
                     order.cancel_date = parse(order_dict["cancelDate"])
-            except Exception, e:
+            except Exception as e:
                 pass
 
             try:
                 order.pre_book_option = order_dict["preBookOption"]
-            except Exception, e:
+            except Exception as e:
                 pass
 
             if order_dict["shipToId"] > 0:
@@ -1130,7 +1127,7 @@ def api_order_save(request, order_id):
 
             return HttpResponse(json.dumps(order_dict), mimetype="application/json")
 
-        except Exception, e:
+        except Exception as e:
             logger.error("api_order_save: %s" % (e))
             return HttpResponseServerError(e)
     else:
@@ -1197,7 +1194,7 @@ def order_duplicate(order_id):
             new_order.billto_state = billto_address.state
             new_order.billto_postal_code = billto_address.postal_code
             new_order.billto_country = billto_address.country
-        except Exception, e:
+        except Exception as e:
             pass
 
         try:
@@ -1247,7 +1244,7 @@ def order_duplicate(order_id):
 
         return return_object
 
-    except Exception, e:
+    except Exception as e:
         logger.error("order_duplicate: %s" % (e))
         raise e
 
@@ -1266,7 +1263,7 @@ def api_order_sources(request):
 
         return HttpResponse(json.dumps(order_sources), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_sources: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1280,7 +1277,7 @@ def api_order_prebook_options(request):
             pre_book_options.append(option.convert_to_dict())
         return HttpResponse(json.dumps(pre_book_options), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_order_sources: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1351,7 +1348,7 @@ def sku_exists(sku):
     return_value = True
     try:
         sku_object = ProductSku.objects.get(sku=sku, active=True)
-    except Exception, e:
+    except Exception as e:
         return_value = False
 
     return return_value
@@ -1368,7 +1365,7 @@ def api_product_styles(request):
             return_object.append(style.convert_to_dict())
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_product_styles: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1379,7 +1376,7 @@ def api_product_style(request, product_style_id):
         return_object = style.convert_to_dict()
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_product_style: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1389,7 +1386,7 @@ def api_product_style_detail(request, product_style_id):
         return_object = product_style_detail(product_style_id)
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_product_style_detail: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1441,7 +1438,7 @@ def product_style_detail(product_style_id):
 
         return return_object
 
-    except Exception, e:
+    except Exception as e:
         logger.error("product_style_detail: %s" % (e))
         raise e
 
@@ -1450,7 +1447,7 @@ def product_style_get_id(sku):
     try:
         product_style = ProductStyle.objects.get(style_sku=sku)
         return product_style.pk
-    except Exception, e:
+    except Exception as e:
         return 0
 
 
@@ -1470,7 +1467,7 @@ def api_reps(request):
             for rep_user_profile in UserProfile.objects.filter(user_type="REP").order_by("account_id"):
                 return_list.append(rep_user_profile.convert_to_dict())
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_reps: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -1482,7 +1479,7 @@ def api_rep(request, rep_id):
         dealer = UserProfile.objects.get(pk=rep_id)
         return_object = dealer.convert_to_dict()
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_rep: %s" % (e))
 
     return HttpResponse(json.dumps(return_object), mimetype="application/json")
@@ -1508,7 +1505,7 @@ def user_profile_terms(request):
                 "terms_file_path": user_profile.terms_file_path.url
             })
 
-    except Exception, e:
+    except Exception as e:
         logger.error("user_profile_terms: %s" % (e))
 
     return HttpResponse(json.dumps(return_list), mimetype="application/json")
@@ -1532,7 +1529,7 @@ def user_profile_term(request):
             "terms_file_path": user_profile.terms_file_path.url
         }
 
-    except Exception, e:
+    except Exception as e:
         logger.error("user_profile_term: %s" % (e))
         return HttpResponseServerError("Error accepting terms")
 
@@ -1549,7 +1546,7 @@ def api_user_profiles(request):
             return_object.append(user_profile.convert_to_dict())
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_user_profiles: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1560,7 +1557,7 @@ def api_user_profile(request, user_profile_id):
         return_object = user_profile.convert_to_dict()
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_user_profile: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1574,7 +1571,7 @@ def api_user_profile_addresses(request, user_profile_id):
 
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_user_profile_addresses: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1585,7 +1582,7 @@ def api_user_profile_address(request, user_profile_id, user_address_id):
         return_object = user_address.convert_to_dict()
         return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
-    except Exception, e:
+    except Exception as e:
         logger.error("api_user_profile_address: %s" % (e))
         return HttpResponseServerError(e)
 
@@ -1597,7 +1594,7 @@ def valid_date(date_string):
     return_value = True
     try:
         date_object = parse(date_string)
-    except Exception, e:
+    except Exception as e:
         logger.error("api_valid_date: %s" % (e))
         return_value = False
 

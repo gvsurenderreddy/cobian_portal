@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+
 @login_required
 def index(request):
     user_profile = None
@@ -24,7 +25,8 @@ def render_page(request, page_template, page="", args={}):
     default_args.update(args)
     
     return render(request, page_template, default_args)
-    
+
+
 # ---------------------------------------
 #                HELPERS
 # ---------------------------------------

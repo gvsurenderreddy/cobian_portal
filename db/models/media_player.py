@@ -1,5 +1,5 @@
-from django.utils.translation import ugettext, ugettext_lazy as _
 from django.db import models
+
      
 class MediaPlayer(models.Model):
     AUDIENCE = (
@@ -9,7 +9,7 @@ class MediaPlayer(models.Model):
     )
     
     audience = models.CharField(default="ALL", choices=AUDIENCE, max_length=30)
-    title = models.CharField(_("Title"), max_length=100, blank=True)
+    title = models.CharField("Title", max_length=100, null=True)
     enabled = models.BooleanField(default=False)
     
     def __str__(self):

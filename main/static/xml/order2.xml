@@ -1,0 +1,110 @@
+<Order>
+  <OrderID>1771</OrderID>
+  <AddressValidated>Y</AddressValidated>
+  <Affiliate_Commissionable_Value>81.6000</Affiliate_Commissionable_Value>
+  <AVS>Z</AVS>
+  <BillingAddress1>1134 E Lk Sammamish Pkwy NE</BillingAddress1>
+  <BillingAddress2 />
+  <BillingCity>Sammamish</BillingCity>
+  <BillingCompanyName />
+  <BillingCountry>United States</BillingCountry>
+  <BillingFaxNumber />
+  <BillingFirstName>Anh</BillingFirstName>
+  <BillingLastName>Rohrbach</BillingLastName>
+  <BillingPhoneNumber>425-821-1177</BillingPhoneNumber>
+  <BillingPostalCode>98074</BillingPostalCode>
+  <BillingState>WA</BillingState>
+  <CardHoldersName>F53043D8E74C91B82065F7C66E823172F2BAD51A953A8DA2D746E5BA2239A533</CardHoldersName>
+  <CC_Last4>1003</CC_Last4>
+  <CreditCardAuthorizationDate>2013-10-31T12:58:00</CreditCardAuthorizationDate>
+  <CreditCardAuthorizationNumber>226730</CreditCardAuthorizationNumber>
+  <CreditCardTransactionID>5654843364</CreditCardTransactionID>
+  <Customer_IPAddress>24.17.201.96</Customer_IPAddress>
+  <CustomerID>1823</CustomerID>
+  <CVV2_Response>M</CVV2_Response>
+  <IsAGift>N</IsAGift>
+  <IsGTSOrder>False</IsGTSOrder>
+  <Locked>Y</Locked>
+  <Order_Comments />
+  <Order_Entry_System>ONLINE</Order_Entry_System>
+  <OrderDate>2013-10-31T12:58:00</OrderDate>
+  <OrderStatus>Processing</OrderStatus>
+  <PaymentAmount>81.6000</PaymentAmount>
+  <PaymentMethodID>7</PaymentMethodID>
+  <PONum />
+  <SalesTax1>0.0000</SalesTax1>
+  <SalesTax2>0.0000</SalesTax2>
+  <SalesTax3>0.0000</SalesTax3>
+  <SalesTaxRate>0</SalesTaxRate>
+  <SalesTaxRate1>0</SalesTaxRate1>
+  <SalesTaxRate2>0</SalesTaxRate2>
+  <SalesTaxRate3>0</SalesTaxRate3>
+  <ShipAddress1>1134 E Lk Sammamish Pkwy NE</ShipAddress1>
+  <ShipAddress2 />
+  <ShipCity>Sammamish</ShipCity>
+  <ShipCompanyName />
+  <ShipCountry>United States</ShipCountry>
+  <ShipFaxNumber />
+  <ShipFirstName>Anh</ShipFirstName>
+  <ShipLastName>Rohrbach</ShipLastName>
+  <ShipPhoneNumber>425-821-1177</ShipPhoneNumber>
+  <Shipping_Locked>Y</Shipping_Locked>
+  <ShippingMethodID>104</ShippingMethodID>
+  <ShipPostalCode>98074</ShipPostalCode>
+  <ShipResidential>Y</ShipResidential>
+  <ShipState>WA</ShipState>
+  <Stock_Priority>3</Stock_Priority>
+  <Tax1_Title>Tax</Tax1_Title>
+  <Tax2_Title />
+  <Tax3_Title />
+  <Total_Payment_Authorized>81.6000</Total_Payment_Authorized>
+  <Total_Payment_Received>0.0000</Total_Payment_Received>
+  <TotalShippingCost>0.0000</TotalShippingCost>
+  <VendorID>0</VendorID>
+  
+  <OrderDetails>
+    <OrderDetailID>3114</OrderDetailID>
+    <AutoDropShip>N</AutoDropShip>
+    <FreeShippingItem>N</FreeShippingItem>
+    <GiftTrakNumber>0</GiftTrakNumber>
+    <GiftWrap />
+    <GiftWrapCost>0.0000</GiftWrapCost>
+    <GiftWrapNote />
+    <IsKitID />
+    <KitID />
+    <Locked>Y</Locked>
+    <OnOrder_Qty>0</OnOrder_Qty>
+    <OptionIDs />
+    <Options />
+    <OrderID>1771</OrderID>
+    <ProductCode>TIF12-001-07</ProductCode>
+    <ProductID>39067</ProductID>
+    <ProductName>Tiffany Bling - 7</ProductName>
+    <ProductPrice>35.0000</ProductPrice>
+    <ProductWeight>1</ProductWeight>
+    <QtyOnBackOrder>0</QtyOnBackOrder>
+    <QtyOnHold>1</QtyOnHold>
+    <QtyShipped>0</QtyShipped>
+    <Quantity>1</Quantity>
+    <TotalPrice>35.0000</TotalPrice>
+  </OrderDetails>
+
+  <Customer>
+    <CustomerID>1823</CustomerID>
+    <AccessKey>C</AccessKey>
+    <BillingAddress1>1139 E Lk Sammamish Pkwy NE</BillingAddress1>
+    <BillingAddress2 />
+    <City>Sammamish</City>
+    <CompanyName />
+    <Country>United States</Country>
+    <EmailAddress>Snowanh@aol.com</EmailAddress>
+    <EmailSubscriber>Y</EmailSubscriber>
+    <FirstName>Anh</FirstName>
+    <LastModified>2013-09-24T20:09:00</LastModified>
+    <LastName>Rohrbach</LastName>
+    <Password>3A1BD24907F7B5914CEBC33CF7CCF67C94AFD05B1AF1F2E63C5AC6D171ECF8AF</Password>
+    <PhoneNumber>858-442-7007</PhoneNumber>
+    <PostalCode>98074</PostalCode>
+    <State>WA</State>
+  </Customer>
+</Order>

@@ -1,0 +1,27 @@
+a:link, 
+a:visited {
+    color: #444;
+}
+
+div#header {
+    background-color: #000;
+    color: #8dc64e;
+}
+
+#branding h1,
+#branding a,
+#branding a:hover {
+    color: #8dc64e;
+}
+
+
+#content .row1 {
+    background-color: #fafafa;
+}
+
+
+
+.file-upload a:link,
+.file-upload a:visited {
+    text-decoration: underline;
+}

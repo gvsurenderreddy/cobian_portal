@@ -599,7 +599,7 @@ App.View.ButtonView = Backbone.View.extend({
 		
 		orderSave.attributes.orderId = App.orderId,
 		orderSave.attributes.dealerId = App.Model.order.attributes.dealerId,
-		orderSave.attributes.poNumber = $("#po_number").val(),
+		orderSave.attributes.poNumber = $.trim($("#po_number").val()),
 		orderSave.attributes.orderType = $("#order_type").val(),
 		orderSave.attributes.orderSource = $("#order_source").val(),
 		orderSave.attributes.preBookDate = $("#ship_date").val(),
@@ -611,7 +611,11 @@ App.View.ButtonView = Backbone.View.extend({
 		
 		if (orderSave.attributes.orderSource == 'NONE') {
 			//displayMessage('Order Source', 'Please select an order source.');
-			alert('Please select an order source.');
+			//alert('Please select an order source.');
+			App.View.orderMessageModalView.show("Order Source", "Please select an order source.");
+		} else if (orderSave.attributes.poNumber.length == 0) {
+			//alert('You must provide a PO Number!');
+			App.View.orderMessageModalView.show("PO Number", "You must provide a PO Number!");
 		} else {
 		    $.each($('input[type="number"]'), function(index) {
 		        var id = $(this).data("id"),
@@ -647,7 +651,8 @@ App.View.ButtonView = Backbone.View.extend({
 					self.enableSave(false);
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-	                alert(textStatus.statusText);
+	                //alert(textStatus.statusText);
+					App.View.orderMessageModalView.show("Error Saving Order", textStatus.statusText);
 				}
 			});
 		}
@@ -692,7 +697,11 @@ App.View.OrderSubmitModalView = Backbone.View.extend({
     },
 	
 	show: function() {
-		this.$el.find(".modal-body p").html("Are you sure you want to submit your order?");
+		var message = "Are you sure you want to submit your order?";
+		if ($("#order_type").val() == "AT-ONCE") {
+			message = "Warning: At-Once orders are considered immediately approved for shipping on the Ship Date. Are you sure you would like to submit this order?";
+		}
+		this.$el.find(".modal-body p").html(message);
 		this.$el.find(".btn").show();
 		this.$el.find(".btn-default").html("No");
 		this.$el.modal("show");

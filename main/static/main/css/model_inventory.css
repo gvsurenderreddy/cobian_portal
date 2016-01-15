@@ -1,0 +1,58 @@
+.custom-select select,
+input {
+    height: 22px;
+	font-size: 11px;
+	color: #7f8c8c;
+}
+.custom-select:after {
+    height: 22px;
+    line-height: 22px;
+}
+
+/*.dealer-view input {
+    display: inline-block;
+    width: 200px;
+}*/
+
+/* add_modify_modal */
+#add_modify_modal .modal-dialog {
+	width: 700px;
+}
+#add_modify_modal .item,
+#add_modify_modal .sku {
+	display: none;
+}
+#add_modify_modal input[type="text"] {
+	width: 180px;
+}
+#add_modify_modal input[type="number"] {
+	width: 100px;
+}
+#add_modify_modal .help-block {
+	font-size: 10px;
+	font-style: italic;
+}
+
+#add_modify_modal .checkbox {
+	height: 30px;
+}
+
+
+/* grid */
+#grid_container {
+	margin-top: 20px;
+}
+
+.backgrid {
+	font-size: 11px;
+}
+
+#grid-wrapper {
+    border: 1px solid #ddd;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+    margin: 15px 0;
+    padding: 0;
+}
+

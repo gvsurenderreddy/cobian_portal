@@ -193,9 +193,9 @@
 }
 
 .backgrid th.sortable.ascending > a > b.sort-caret {
-	background-image: url('/static/v2/img/arrow_up.svg');
+	background-image: url('/static/images/arrow_up.svg');
 }
 
 .backgrid th.sortable.descending > a > b.sort-caret {
-	background-image: url('/static/v2/img/arrow_down.svg');
+	background-image: url('/static/images/arrow_down.svg');
 }

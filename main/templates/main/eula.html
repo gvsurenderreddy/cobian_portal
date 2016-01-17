@@ -1,0 +1,32 @@
+{% extends "main/base.html" %}
+
+{% load staticfiles %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'main/css/eula.css' %}" type="text/css">
+{% endblock extra_css %}
+
+{% block breadcrumb_content %}
+    <li><a href="/">Home</a></li>
+    <li class="active">EULA</li>
+{% endblock breadcrumb_content %}
+
+{% block modal_content %}
+{% endblock modal_content %}
+
+{% block main_content %}
+	<div class="eula-container">
+		<div class="eula-content">
+			{% include "snippets/eula.html" %}
+		</div>
+	</div>
+	<div class="button-container">
+		<form id="submit_form" action="/eula/" method="POST">{% csrf_token %}
+			<input type="submit" name="submit_button" value="I AGREE" id="submit_button" class="btn btn-success btn-sm">
+		</form>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'main/js/eula.js' %}" type="text/javascript"></script>
+{% endblock extra_js %}

@@ -8,7 +8,6 @@ from db.models import *
 from suds.client import Client
 from suds.transport.https import HttpAuthenticated
 import lxml.etree as etree
-from urllib2 import urlopen
 
 import logging
 logging.basicConfig(level=logging.INFO)

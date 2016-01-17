@@ -1,0 +1,13 @@
+{% load i18n %}
+{% load humanize %}
+
+{% block body %}
+	PO#: {{order.po_number}}
+	Submit Date: {{order.status_date|date:"M d, Y"}}
+	Order Type: {% if order.order_type == "AT-ONCE" %}At Once Order{% else %}Pre-Book Order{% endif %}
+	Ship Date: {{order.prebook_date|date:"SHORT_DATE_FORMAT"}}
+	Cancel Date: {{order.cancel_date|date:"SHORT_DATE_FORMAT"}}
+	Notes: {{order.notes}}
+
+
+{% endblock body %}

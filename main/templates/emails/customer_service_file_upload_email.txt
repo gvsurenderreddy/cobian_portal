@@ -1,0 +1,6 @@
+{% load i18n %}
+{% load humanize %}
+
+{% block body %}
+	{{dealer.company}} has uploaded a document for review.  Click <a href="{{media_url}}{{dealer.terms_file_path}}">here</a> to view the document.
+{% endblock body %}

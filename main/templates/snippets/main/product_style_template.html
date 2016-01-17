@@ -1,0 +1,130 @@
+<script type="text/template" id="product_style_template">
+	<div class="panel-heading" role="tab" id="heading_shipto">
+		<h4 class="panel-title">
+			<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse_<%= style.id %>" aria-expanded="false" aria-controls="collapse_<%= style.id %>">
+				<span><%= style.styleSku %> - <%= style.style %></span>
+				<span class="style-total pull-right" data-total=0>$0.00</span>
+				<span class="style-qty-total pull-right" style="margin-right: 7px" data-qty-total=0>0</span>
+			</a>
+		</h4>
+	</div>
+	<div id="collapse_<%= style.id %>" data-id="<%= style.id %>" class="product-style panel-collapse collapse" role="tabpanel" aria-labelledby="heading_<%= style.id %>">
+		<div class="panel-body">
+			<table class="table table-bordered">
+				<tbody>
+					<tr class="active">
+						<td align="center" colspan="2">Style</td>
+						<td align="center" colspan="3">Color</td>
+						<% _.each(sizes, function(size) { %>  
+							<td align="center"><%= size.description %></td>
+						<% }); %>
+						<td align="right">Qty</td>
+						<td align="right">Total</td>
+					</tr>
+					<% 
+						var count = 0;
+					%>
+					<% _.each(items, function(item) { %>  
+						<%
+							var available = moment(item.available).unix(),
+								rowSpan = items.length,
+								colSpan = sizes.length + 5;
+							
+							count++; 
+						%>
+						<tr class="item-row" data-available="<%= available %>">
+							<% if (count == 1) { %> 
+								<td align="center" style="vertical-align: middle" rowspan="<%= rowSpan %>"><%= style.styleSku %></td>
+								<td align="center" style="vertical-align: middle" rowspan="<%= rowSpan %>"><%= style.style %></td>
+							<% }; %>
+							<td align="center" style="vertical-align: middle"><a href="/media/products/<%=item.image %>" target="_blank"><img src="/media/products/<%=item.image %>" width="120" class="img-responsive" /></a></td>
+							<td align="center" style="vertical-align: middle"><%= item.sku %></td>
+							<td align="center" style="vertical-align: middle">
+								<%= item.description %>
+								<br><%= item.price %>
+								<div class="item-available" data-available="<%= available %>">Available <%= item.available %></div>
+							</td>
+							
+							<% _.each(sizes, function(size) { %>  
+								<% var sizeFound = false; %>
+								<% _.each(item.skus, function(sku) { %> 
+									<% var skuArray = sku.sku.split('-'); %>
+									<% if (skuArray[2] == size.sku) { %>
+										<%  
+											var quantity = 0,
+												odid = 0;
+												
+											sizeFound = true; 
+											
+											var orderDetail = orderDetails.where({'sku': sku.sku});
+											if (orderDetail.length > 0) {
+												odid = orderDetail[0].attributes.id;
+												quantity = orderDetail[0].attributes.quantity;
+											}
+											
+											var inventoryItem = inventory.where({'sku': sku.sku}),
+												inStock = 0;
+												
+											if (inventoryItem.length == 1) {
+												inStock = inventoryItem[0].attributes.inStock;
+											}
+										%>
+										<td align="center" style="vertical-align: middle" class="style-size-column">
+											<% if (inStock > 0) { %>
+												<input 
+													id="sku<%= sku.id %>" 
+													class="form-control item<%= item.id %>" 
+													type="number" 
+													min="0" 
+													placeholder="0" 
+													data-id="<%= sku.id %>" 
+													data-sku="<%= sku.sku %>" 
+													data-itemnumber="item<%= item.id %>" 
+													data-price="<%= sku.wholesale %>" 
+													data-odid="<%= odid %>" 
+													data-qty="<%= quantity %>" 
+													data-instock="<%= inStock %>" 
+													data-available="<%= available %>"
+													value="<%= quantity %>" 
+													style="text-align: center">
+													
+												<small>In stock: <%= inStock %></small>
+											<% } else {; %>
+												<input disabled 
+													id="sku<%= sku.id %>" 
+													class="form-control item<%= item.id %>" 
+													type="number" 
+													min="0" 
+													placeholder="0" 
+													data-id="<%= sku.id %>" 
+													data-sku="<%= sku.sku %>" 
+													data-itemnumber="item<%= item.id %>" 
+													data-price="<%= sku.wholesale %>" 
+													data-odid="<%= odid %>" 
+													data-qty="<%= quantity %>" 
+													data-instock="0" 
+													data-available="<%= available %>"
+													value="<%= quantity %>"  
+													style="text-align: center">
+													
+													<small>n/a</small>
+											<% }; %>
+										</td>
+									<% }; %>
+								<% }); %>
+								
+								<% if (!sizeFound) { %>
+									<td>&nbsp;</td>
+								<% }; %>
+								
+							<% }); %>
+							
+							<td align="right" style="vertical-align: middle"><span class="item-quantity item<%= item.id %>">0</span></td>
+							<td align="right" style="vertical-align: middle"><span class="item-total item<%= item.id %>">$0.00</span></td>
+						</tr>
+					<% }); %>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</script>

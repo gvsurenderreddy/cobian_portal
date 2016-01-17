@@ -8,10 +8,12 @@ else:
     import psycopg2.extras as db_extras
 
 # JSON
-import json
+import ujson as json
+
+# LOGGING
 import logging
 
-logger = logging.getLogger("portal.api.report")
+logger = logging.getLogger("api.report")
 
 
 # ------------------------------------------
@@ -96,7 +98,7 @@ def api_report_warranty(request):
 
             return_list.append(result_dict)
 
-        return HttpResponse(json.dumps(return_list), mimetype="application/json")
+        return HttpResponse(json.dumps(return_list), content_type="application/json")
 
     except Exception as e:
         logger.error("api_report_warranty_style: {}".format(e))
@@ -200,7 +202,7 @@ def api_report_test(request):
                 "closedDate": result["closed_date"],
             })
 
-        return HttpResponse(json.dumps(return_list), mimetype="application/json")
+        return HttpResponse(json.dumps(return_list), content_type="application/json")
 
     except Exception as e:
         logger.error("api_report_test: {}".format(e))

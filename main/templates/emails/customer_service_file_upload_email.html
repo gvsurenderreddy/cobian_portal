@@ -1,0 +1,10 @@
+{% extends 'emails/email_base.html' %}
+{% load humanize %}
+
+{% block head_block %}
+
+{% endblock head_block %}
+
+{% block body %}
+	{{dealer.company}} has uploaded a document for review.  Click <a href="{{media_url}}{{dealer.terms_file_path}}">here</a> to view the document.
+{% endblock body %}

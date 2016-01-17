@@ -1,0 +1,42 @@
+{% extends 'emails/email_base.html' %}
+{% load humanize %}
+
+{% block head_block %}
+	<style type="text/css">
+		.detail-table tr:nth-child(odd)  { background-color:#eee; }
+		.detail-table tr:nth-child(even) { background-color:#fff; }
+	</style>
+{% endblock head_block %}
+
+{% block body %}
+    <p>
+        Thank you {{warranty.name}} for submitting your warranty claim with Cobian Footwear.
+        Please follow the instructions below and your claim will be reviewed in a timely manner.
+    </p>
+
+    <p>Your Return Authorization number is <strong>{{warranty.claim_number}}</strong></p>
+
+    <p>
+        To complete your warranty claim mail the item to Cobian for review.
+        Make sure your Return Authorization number is clearly visible on the outside of your packaging.
+        Cobian will not accept packages that do not have a valid Return Authorization Number.
+    </p>
+
+    <p>
+        <strong>Mail To:</strong><br>
+        ATTN: Warranty Department<br>
+        Cobian Footwear<br>
+        1739 Melrose Dr. Suite 101<br>
+        San Marcos CA, 92078<br>
+    </p>
+
+    <p>
+        You will be contacted by a Cobian Customer Service Representative after your case review has been completed.
+        Thank you for choosing Cobian.
+    </p>
+
+    <p>
+        Regards,<br>
+        Cobian Customer Service
+    </p>
+{% endblock body %}

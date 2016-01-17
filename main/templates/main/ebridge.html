@@ -1,0 +1,87 @@
+{% extends "main/base.html" %}
+
+{% load staticfiles %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'libs/backgrid/lib/backgrid.css' %}" />
+    <link rel="stylesheet" href="{% static 'libs/backgrid/extensions/paginator/backgrid-paginator.css' %}" />
+    <link rel="stylesheet" href="{% static 'libs/backgrid/extensions/select-all/backgrid-select-all.css' %}" />
+	<link rel="stylesheet" href="{% static 'libs/daterangepicker/daterangepicker-bs3.css' %}" />
+    <link rel="stylesheet" href="{% static 'main/css/backgrid-custom.css' %}" type="text/css">
+	<link rel="stylesheet" href="{% static 'main/css/ebridge.css' %}" type="text/css">
+{% endblock extra_css %}
+
+{% block breadcrumb_content %}
+    <li><a href="/">Home</a></li>
+    <li class="active">eBridge</li>
+{% endblock breadcrumb_content %}
+
+{% block modal_content %}
+
+	<div id="import_modal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+				    <h4 class="modal-title">Importing documents</h4>
+				</div>
+				<div class="modal-body">
+					<div class="progress">
+						<div class="progress-bar progress-bar-success"></div>
+					</div>
+					<div class="info">Importing <span></span></div>
+					<div class="success-count">Success: <span></span></div>
+					<div class="error-count">Error: <span></span></div>
+					<div class="error-message"></div>
+				</div>
+				<div class="modal-footer">
+					<div class="btn btn-default">Close</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock modal_content %}
+
+{% block main_content %}
+
+	<div class="filter-container form-inline">
+		<label>Document Type</label>
+		<select id="doc_type"class="form-control">
+			<option value="PARTIN" selected="selected">Partners</option>
+			<option value="INVRPT">Products</option>
+		</select>
+
+        <label>Status</label>
+		<select id="doc_status" class="form-control">
+			<option value="New" selected="selected">New</option>
+			<option value="Range">Date Range</option>
+		</select>
+
+		<label class="filter-range">Date Range</label>
+		<input id="date_range" name="daterange" class="form-control filter-range" placeholder="Select date range" />
+
+		<div class="btn btn-success">Go</div>
+	</div>
+
+	<div class="grid-container">
+		<div id="import_all" class="btn btn-primary btn-sm">Import All</div>
+		<div id="import_selected" class="btn btn-primary btn-sm">Import Selected</div>
+	    <div id="document_grid" class="backgrid-border"></div>
+		<div class="clearfix"></div>
+		<div id="document_info"></div>
+		<div id="document_paginator"></div>
+		<div class="clearfix"></div>
+	</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'libs/backbone/backbone-pageable.js' %}"></script>
+	<script src="{% static 'libs/backgrid/lib/backgrid.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid/assets/js/lunr.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid/extensions/paginator/backgrid-paginator.js' %}"></script>
+	<script src="{% static 'libs/backgrid/extensions/select-all/backgrid-select-all.js' %}"></script>
+	<script src="{% static 'libs/moment/min/moment.min.js' %}" type="text/javascript" ></script>
+	<script src="{% static 'libs/daterangepicker/daterangepicker.js' %}" type="text/javascript" ></script>
+	<script src="{% static 'main/js/ebridge.js' %}" type="text/javascript"></script>
+{% endblock extra_js %}

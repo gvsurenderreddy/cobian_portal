@@ -1,0 +1,19 @@
+{% extends "main/base.html" %}
+
+{% block extra_css %}
+    {{block.super}}
+
+{% endblock extra_css %}
+
+{% block extra_js %}
+    {{block.super}}
+
+{% endblock extra_js %}
+
+
+{% block main_content %}
+	{{block.super}}
+	
+	<div>404 - Not a valid page!</div>
+	
+{% endblock %}

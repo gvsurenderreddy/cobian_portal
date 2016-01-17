@@ -4,10 +4,10 @@ from django.conf import settings
 from django.template import RequestContext
 from datetime import datetime, timedelta
 from dateutil.parser import parse
-from decimal import *
 
-# PORTAL
-from db.models import *
+# MODELS
+from db.models.user_profile import User, UserProfile
+
 from db.order_factory import get_default_data_option, send_order
 from main.utils import make_both_emails, send_email_safe, make_html_email, send_email
 
@@ -15,11 +15,8 @@ from main.utils import make_both_emails, send_email_safe, make_html_email, send_
 import csv
 
 # JSON
-import json
+import ujson as json
 
-# SUDS
-from suds.client import Client
-import lxml.etree as etree
 import logging
 
 logger = logging.getLogger("portal.api.views")
@@ -33,7 +30,7 @@ def api_dealers(request):
 
     return_list = []
     try:
-        user_profile = request.user.get_profile()
+        user_profile = request.user.userprofile
         if user_profile.user_type == "DEALER":
             return_list.append(user_profile.convert_to_dict())
         else:
@@ -49,7 +46,7 @@ def api_dealers(request):
     except Exception as e:
         logger.error("api_dealers: %s" % (e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_dealer(request, dealer_id):
@@ -61,653 +58,149 @@ def api_dealer(request, dealer_id):
     except Exception as e:
         logger.error("api_dealer: %s" % (e))
 
-    return HttpResponse(json.dumps(return_object), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
-# ------------------------------------------
-#                DOCUMENTS
-# ------------------------------------------
-def ebridge_documents(request):
+def api_dealers_create(request):
     return_list = []
-    dateNow = datetime.now()
-    fromDate = datetime.strptime('1/1/%s 12:01AM' % (dateNow.year), '%m/%d/%Y %I:%M%p')
-    toDate = dateNow
+    f = open("/Users/peello/Downloads/dealers.txt")
+    for line in f:
+        line_split = line.split("|")
+        dealer_dict = {
+            "id": int(line_split[0]),
+            "userId": int(line_split[1]),
+            "repAccountId": line_split[2],
+            "accountId": line_split[3],
+            "company": line_split[4]
+        }
+        return_list.append(dealer_dict)
 
-    logger.error("ebridge_document: TEST LOGGER")
-
-    doc_type = request.GET.get("type", "INVRPT")
-    status = request.GET.get("status", "New")
-    if status == "Range":
-        status = "All"
+        rep_exists = False
         try:
-            start_date = datetime.strptime(request.GET.get("start"), '%Y-%m-%d')
-            fromDate = datetime.strptime('%s/%s/%s 12:01AM' % (start_date.month, start_date.day, start_date.year),
-                                         '%m/%d/%Y %I:%M%p')
+            rep = UserProfile.objects.get(account_id=dealer_dict["repAccountId"])
+            rep_exists = True
 
-            end_date = datetime.strptime(request.GET.get("end"), '%Y-%m-%d')
-            toDate = datetime.strptime('%s/%s/%s 11:59PM' % (end_date.month, end_date.day, end_date.year),
-                                       '%m/%d/%Y %I:%M%p')
         except Exception as e:
-            fromDate = datetime.strptime('%s/%s/%s 12:01AM' % (dateNow.month, dateNow.day, dateNow.year),
-                                         '%m/%d/%Y %I:%M%p')
-            toDate = datetime.strptime('%s/%s/%s 11:59PM' % (dateNow.month, dateNow.day, dateNow.year),
-                                       '%m/%d/%Y %I:%M%p')
+            print("  ** REP NOT FOUND - {}".format(dealer_dict["repAccountId"]))
 
-    try:
-        client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-        returnValue = client.service.GetDocumentList2(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, status,
-                                                      doc_type, settings.EBRIDGE_PARTNER, fromDate, toDate)
-
-        if isinstance(returnValue, unicode):
-            returnValue = returnValue.encode("utf-8")
-
-        doc = etree.fromstring(returnValue)
-
-        if len(doc) > 1:
-            documentList = doc[1]
-
-            return_list.append({
-                "doc_num": documentList.get("doc_num"),
-                "doc_sys_no": documentList.get("doc_sys_no"),
-                "tran_datetime": documentList.get("tran_datetime"),
-                "doc_date": documentList.get("doc_date"),
-                "flag": 0
-            })
-            for document in documentList:
-                return_list.append({
-                    "doc_num": document.get("doc_num"),
-                    "doc_sys_no": document.get("doc_sys_no"),
-                    "tran_datetime": document.get("tran_datetime"),
-                    "doc_date": document.get("doc_date"),
-                    "flag": 0
-                })
-    except Exception as e:
-        logger.error("ebridge_documents: %s" % (e))
-
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
-
-
-def ebridge_document(request):
-    doc_type = request.GET.get("doc_type", None)
-    doc_sys_no = request.GET.get("doc_sys_no", None)
-
-    if doc_type and doc_sys_no:
-        document = {}
-        return_value = "Invalid doc_type"
-        if doc_type == "INVRPT":
-            document = get_document_product(doc_sys_no)
-            return_value = import_document_product(document)
-
-        if doc_type == "PARTIN":
-            document = get_document_partner(doc_sys_no)
-            return_value = import_document_partner(document)
-
-        if return_value == "Success":
-            return HttpResponse(json.dumps(document), mimetype="application/json")
-        else:
-            logger.error("ebridge_document: %s" % (return_value))
-            return HttpResponseServerError(return_value)
-    else:
-        logger.error("ebridge_document: No doc_type and/or doc_sys_no provided!")
-        return HttpResponseServerError("No doc_type and/or doc_sys_no provided!")
-
-
-def get_document_list(doc_type, status="New", date_range="year"):
-    return_list = []
-    dateNow = datetime.now()
-    fromDate = datetime.strptime('1/1/%s 12:01AM' % (dateNow.year), '%m/%d/%Y %I:%M%p')
-    if date_range == "today":
-        fromDate = datetime.strptime('%s/%s/%s 12:01AM' % (dateNow.month, dateNow.day, dateNow.year),
-                                     '%m/%d/%Y %I:%M%p')
-    if date_range == "yesterday":
-        fromDate = datetime.strptime('%s/%s/%s 12:01AM' % (dateNow.month, dateNow.day - 1, dateNow.year),
-                                     '%m/%d/%Y %I:%M%p')
-    if date_range == "month":
-        fromDate = datetime.strptime('%s/1/%s 12:01AM' % (dateNow.month, dateNow.year), '%m/%d/%Y %I:%M%p')
-    toDate = dateNow
-
-    try:
-        client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-        returnValue = client.service.GetDocumentList2(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, status,
-                                                      doc_type, settings.EBRIDGE_PARTNER, fromDate, toDate)
-
-        if isinstance(returnValue, unicode):
-            returnValue = returnValue.encode("utf-8")
-
-        doc = etree.fromstring(returnValue)
-
-        if len(doc) > 1:
-            documentList = doc[1]
-
-            return_list.append({
-                "doc_num": documentList.get("doc_num"),
-                "doc_sys_no": documentList.get("doc_sys_no"),
-                "tran_datetime": documentList.get("tran_datetime"),
-                "doc_date": documentList.get("doc_date")
-            })
-            for document in documentList:
-                return_list.append({
-                    "doc_num": document.get("doc_num"),
-                    "doc_sys_no": document.get("doc_sys_no"),
-                    "tran_datetime": document.get("tran_datetime"),
-                    "doc_date": document.get("doc_date")
-                })
-    except Exception as e:
-        logger.error("get_document_list: %s" % (e))
-
-    return return_list
-
-
-def get_document_product(doc_sys_no):
-    return_object = {}
-
-    try:
-        client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-        returnValue = client.service.GetDocument(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, doc_sys_no)
-        if isinstance(returnValue, unicode):
-            returnValue = returnValue.encode("utf-8")
-
-        returnValue = returnValue.replace("UTF-16", "utf-8")
-        my_xml = etree.XML(returnValue)
-
-        if returnValue:
-            documents = etree.XML(returnValue)
-
-            catalogData = documents[3]
-
-            productId = None
-            productName = ""
-            description = ""
-            price = 0
-            costPrice = 0
-            retailPrice = 0
-            inventory = 0
-
-            for catalogElement in catalogData:
-                # Product info
-                if catalogElement.tag.lower().endswith("product"):
-                    for productElement in catalogElement:
-                        if productElement.tag.lower().endswith("productid"):
-                            productId = productElement.text
-                        if productElement.tag.lower().endswith("productname"):
-                            productName = productElement.text
-                        if productElement.tag.lower().endswith("longdescription"):
-                            description = productElement.text
-
-                # Pricing info
-                if catalogElement.tag.lower().endswith("pricing"):
-                    for pricingElement in catalogElement:
-                        if pricingElement.tag.lower().endswith("productcostprice"):
-                            costPrice = pricingElement[0].text
-                        if pricingElement.tag.lower().endswith("productprice"):
-                            price = pricingElement[0].text
-                        if pricingElement.tag.lower().endswith("retail_price"):
-                            retailPrice = pricingElement[0].text
-
-                # Inventory info
-                if catalogElement.tag.lower().endswith("inventoryreportdetail"):
-                    for inventoryElement in catalogElement:
-                        if inventoryElement.tag.lower().endswith("totalinventoryquantity"):
-                            for quantityElement in inventoryElement:
-                                if quantityElement.tag.lower().endswith("quantityvalue"):
-                                    inventory = quantityElement.text
-
-            return_object = {
-                "product_id": productId,
-                "product_name": productName,
-                "description": description,
-                "price": price,
-                "cost_price": costPrice,
-                "retail_price": retailPrice,
-                "inventory": inventory,
-            }
-
-    except Exception as e:
-        logger.error("get_document_product: %s" % (e))
-
-    return return_object
-
-
-def import_document_product(document_product):
-    return_value = "Success"
-
-    sku = document_product["product_id"]
-    inventory = int(document_product["inventory"])
-    cost = Decimal(document_product["cost_price"])
-    wholesale = Decimal(document_product["price"])
-    msrp = Decimal(document_product["retail_price"])
-    active = True
-
-    if sku:
-        try:
-            product_sku = ProductSku.objects.get(sku=sku)
-            product_sku.inventory = inventory
-            product_sku.cost = cost
-            product_sku.wholesale = wholesale
-            product_sku.msrp = msrp
-            product_sku.active = active
-            product_sku.save()
-
-        except ProductSku.DoesNotExist:
+        if rep_exists:
             try:
-                sku_array = sku.split("-")
-                name_array = document_product["product_name"].split("-")
-                style_sku = sku_array[0]
-                style = name_array[0].strip()
-                item_number = "%s-%s" % (sku_array[0], sku_array[1])
+                user = User(username=dealer_dict["accountId"], is_staff=False, is_active=True, is_superuser=False)
+                user.set_password(dealer_dict["accountId"])
+                user.save()
 
-                if len(name_array) > 1:
-                    description = name_array[1].strip()
-                else:
-                    description = ""
-
-                if len(name_array) > 2:
-                    size = name_array[2].strip()
-                else:
-                    size = ""
-
-                # Create ProductStyle...
-                try:
-                    product_style = ProductStyle.objects.get(style_sku=style_sku)
-                except ProductStyle.DoesNotExist:
-                    product_style = ProductStyle(style_sku=style_sku, style=style)
-                    product_style.save()
-
-                # Create ProductItem...
-                try:
-                    product_item = ProductItem.objects.get(product_style=product_style, item_number=item_number)
-                except ProductItem.DoesNotExist:
-                    product_item = ProductItem(product_style=product_style, item_number=item_number,
-                                               description=description, available=datetime.now())
-                    product_item.save()
-
-                product_sku = ProductSku(product_item=product_item, sku=sku, item_number=item_number, style=style,
-                                         description=description, size=size, inventory=inventory, cost=cost,
-                                         wholesale=wholesale, msrp=msrp, active=active)
-                product_sku.save()
-
+                user_profile = UserProfile(user=user,
+                                           account_rep=rep,
+                                           user_type="DEALER",
+                                           account_id=dealer_dict["accountId"],
+                                           company=dealer_dict["company"])
+                user_profile.save()
+                print("  ** CREATED - UserId (%s)  UserProfileId (%s)" % (user.pk, user_profile.pk))
             except Exception as e:
-                logger.error("import_document_product: %s" % (e))
-                return_value = "Error parsing sku %s: %s" % (sku, e)
+                print("  ** ERROR - %s : %s" % (dealer_dict["accountId"], e))
+    f.close()
 
-        except Exception as e:
-            logger.error("import_document_product: %s" % (e))
-            return_value = "Error importing %s : %s (%s)" % (sku, e, type(e))
-    else:
-        return_value = "Invalid Sku"
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
-    return return_value
-
-
-def get_document_partner(doc_sys_no):
-    return_object = {}
-
+# ------------------------------------------
+#                  REPS
+# ------------------------------------------
+def api_reps(request):
+    return_list = []
     try:
-        client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-        returnValue = client.service.GetDocument(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, doc_sys_no)
-        if isinstance(returnValue, unicode):
-            returnValue = returnValue.encode("utf-8")
-
-        returnValue = returnValue.replace("UTF-16", "utf-8")
-        my_xml = etree.XML(returnValue)
-
-        if returnValue:
-            documents = etree.XML(returnValue)
-
-            # Initialize...
-            name = None
-            account_id = None
-            rep_id = None
-            shipTo = []
-            billToName = None
-            billToStreet = None
-            billToCity = None
-            billToPostalCode = None
-            billToRegion = None
-            billToCountry = None
-
-            for document in documents:
-                if document.tag.lower().endswith("billtoparty"):
-                    billToParty = document
-                    for billToElement in billToParty:
-                        if billToElement.tag.lower().endswith("partyid"):
-                            account_id = billToElement[0].text
-
-                        if billToElement.tag.lower().endswith("nameaddress"):
-                            for nameAddressElement in billToElement:
-                                if nameAddressElement.tag.lower().endswith("name1"):
-                                    billToName = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("street"):
-                                    billToStreet = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("postalcode"):
-                                    billToPostalCode = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("city"):
-                                    billToCity = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("region"):
-                                    for regionElement in nameAddressElement:
-                                        if regionElement.tag.lower().endswith("regioncodedother"):
-                                            billToRegion = regionElement.text
-                                if nameAddressElement.tag.lower().endswith("country"):
-                                    for countryElement in nameAddressElement:
-                                        if countryElement.tag.lower().endswith("countrycodedother"):
-                                            billToCountry = countryElement.text
-
-                if document.tag.lower().endswith("shiptoparty"):
-                    shipToParty = document
-                    shipToName = None
-                    shipToAddressId = None
-                    shipToStreet = None
-                    shipToCity = None
-                    shipToPostalCode = None
-                    shipToRegion = None
-                    shipToCountry = None
-
-                    for shipToElement in shipToParty:
-                        if shipToElement.tag.lower().endswith("nameaddress"):
-                            for nameAddressElement in shipToElement:
-                                if nameAddressElement.tag.lower().endswith("name1"):
-                                    shipToName = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("street"):
-                                    shipToStreet = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("postalcode"):
-                                    shipToPostalCode = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("city"):
-                                    shipToCity = nameAddressElement.text
-                                if nameAddressElement.tag.lower().endswith("region"):
-                                    for regionElement in nameAddressElement:
-                                        if regionElement.tag.lower().endswith("regioncodedother"):
-                                            shipToRegion = regionElement.text
-                                if nameAddressElement.tag.lower().endswith("country"):
-                                    for countryElement in nameAddressElement:
-                                        if countryElement.tag.lower().endswith("countrycodedother"):
-                                            shipToCountry = countryElement.text
-
-                        if shipToElement.tag.lower().endswith("primarycontact"):
-                            for primaryContactElement in shipToElement:
-                                if primaryContactElement.tag.lower().endswith("listofcontactnumber"):
-                                    for listOfContactNumberElement in primaryContactElement:
-                                        if listOfContactNumberElement.tag.lower().endswith("contactnumber"):
-                                            for contactNumberElement in listOfContactNumberElement:
-                                                if contactNumberElement.tag.lower().endswith("contactnumbervalue"):
-                                                    shipToAddressId = contactNumberElement.text
-
-                    shipTo.append({
-                        "shipToName": shipToName,
-                        "shipToAddressId": shipToAddressId,
-                        "shipToStreet": shipToStreet,
-                        "shipToCity": shipToCity,
-                        "shipToPostalCode": shipToPostalCode,
-                        "shipToRegion": shipToRegion,
-                        "shipToCountry": shipToCountry,
-                    })
-
-                if document.tag.lower().endswith("listofnamevalueset"):
-                    nameValues = document
-                    for nameValuePair in nameValues[0][1]:
-                        if nameValuePair[0].text.lower() == "dealer":
-                            name = nameValuePair[1].text
-                        if nameValuePair[0].text.lower() == "salesemployee":
-                            rep_id = nameValuePair[1].text
-
-            return_object = {
-                "name": name,
-                "account_id": account_id,
-                "rep_id": rep_id,
-                "shipTo": shipTo,
-                "billToName": billToName,
-                "billToStreet": billToStreet,
-                "billToCity": billToCity,
-                "billToPostalCode": billToPostalCode,
-                "billToRegion": billToRegion,
-                "billToCountry": billToCountry,
-            }
+        user_profile = request.user.userprofile
+        if user_profile.user_type == "REP":
+            return_list.append(user_profile.convert_to_dict())
+        elif user_profile.user_type == "DEALER":
+            rep_user_profile = UserProfile.objects.get(pk=user_profile.account_rep.pk)
+            return_list.append(rep_user_profile.convert_to_dict())
+        else:
+            for rep_user_profile in UserProfile.objects.filter(user_type="REP").order_by("account_id"):
+                return_list.append(rep_user_profile.convert_to_dict())
 
     except Exception as e:
-        logger.error("get_document_partner: %s" % (e))
+        logger.error("api_reps: {}".format(e))
+        return HttpResponseServerError(e)
 
-    return return_object
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
-def import_document_partner(document_partner):
-    return_value = "Success"
+def api_rep(request, rep_id):
+    return_object = {}
     try:
-        # First, lets get the rep for this partner, if there is no rep, do not import...
-        rep_user_profile = UserProfile.objects.get(account_id=document_partner["rep_id"])
+        dealer = UserProfile.objects.get(pk=rep_id)
+        return_object = dealer.convert_to_dict()
 
-        # Now lets import the partner...
-        create_partner = False
-        partner_exists = False
+    except Exception as e:
+        logger.error("api_rep: %s" % (e))
+
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
+
+
+def api_reps_create(request):
+    rep_list = []
+    rep_list.append({"company": "Raz Hodgeman", "first_name": "Raz", "last_name": "Hodgeman", "account_id": "056", "email": "razhodg@gmail.com", "phone": "949-374-4011"})
+    rep_list.append({"company": "Raz Hodgeman", "first_name": "Raz", "last_name": "Hodgeman", "account_id": "058", "email": "razhodg@gmail.com", "phone": "949-374-4011"})
+    rep_list.append({"company": "Mike Burns", "first_name": "Mike", "last_name": "Burns", "account_id": "041", "email": "mburns.oniell@cox.net", "phone": "760-473-7445"})
+    rep_list.append({"company": "Greg Taylor (GT)", "first_name": "Greg", "last_name": "Taylor", "account_id": "051", "email": "gt@gtsurflines.com", "phone": "904-806-4169"})
+    rep_list.append({"company": "Greg Taylor (GT)", "first_name": "Greg", "last_name": "Taylor", "account_id": "052", "email": "gt@gtsurflines.com", "phone": "904-806-4169"})
+    rep_list.append({"company": "Ernie Yagi", "first_name": "Ernie", "last_name": "Yagi", "account_id": "005", "email": "ernie@surfstuff.net", "phone": "808-479-9343"})
+    rep_list.append({"company": "Mark Neustadter", "first_name": "Mark", "last_name": "Neustadter", "account_id": "039", "email": "newtz2@aol.com", "phone": "609-442-4009"})
+    rep_list.append({"company": "Lance & Amy Gilman", "first_name": "Lance", "last_name": "Gilman", "account_id": "055", "email": "lg93@me.com", "phone": "702-862-9095"})
+    rep_list.append({"company": "Brian Jolin", "first_name": "Brian", "last_name": "Jolin", "account_id": "035", "email": "brian@jolin.org", "phone": "817-368-3061"})
+    rep_list.append({"company": "Karen Moldstad", "first_name": "Karen", "last_name": "Moldstad", "account_id": "009", "email": "kjmold@earthlink.net", "phone": "206-295-5626"})
+    rep_list.append({"company": "Rose Macke", "first_name": "Rose", "last_name": "Macke", "account_id": "024", "email": "mackeclan@cox.", "phone": "949-433-1626"})
+    rep_list.append({"company": "Paul Kuchno", "first_name": "Paul", "last_name": "Kuchno", "account_id": "080", "email": "pgkuchno@hotmail.com", "phone": "787-603-8535"})
+    rep_list.append({"company": "Kevin Campion", "first_name": "Kevin", "last_name": "Campion", "account_id": "085", "email": "anarchy@impulse.net", "phone": "805-550-5562"})
+    rep_list.append({"company": "Jeff Clark", "first_name": "Jeff", "last_name": "Clark", "account_id": "083", "email": "jeffclark9@juno.com", "phone": "503-706-1775"})
+    rep_list.append({"company": "Marc Angelillo", "first_name": "Marc", "last_name": "Angelillo", "account_id": "029", "email": "m.angelillo@att.net", "phone": "617-842-9705"})
+    rep_list.append({"company": "Barry Mayers", "first_name": "Barry", "last_name": "Mayers", "account_id": "115", "email": "barry_mayers@hotmail.com", "phone": "246-428-4390"})
+    rep_list.append({"company": "Gabriella", "first_name": "Gabriella", "last_name": "", "account_id": "106", "email": "gabrielarichards@gmail.com", "phone": "599-767-2252"})
+    rep_list.append({"company": "PJ Bahama", "first_name": "PJ", "last_name": "Bahama", "account_id": "111", "email": "pjbahamas@batelnet.bs", "phone": "242-394-3910"})
+    rep_list.append({"company": "Geary Guay", "first_name": "Geary", "last_name": "Guay", "account_id": "025", "email": "geary@outdoorsalesrep.com", "phone": "303-517-9928"})
+    rep_list.append({"company": "Sheri Letow", "first_name": "Sheri", "last_name": "Letow", "account_id": "078", "email": "sheriletow@gmail.com", "phone": "469-366-1518"})
+
+    count = 0
+    for rep in rep_list:
+        count += 1
+
+        print("%s - %s : %s" % (count, rep["account_id"], rep["company"]))
+
+        create_rep = False
         try:
-            user = User.objects.get(username=document_partner["account_id"])
+            user = User.objects.get(username=rep["account_id"])
+            user.first_name = rep["first_name"]
+            user.last_name = rep["last_name"]
+            user.email = rep["email"]
+            user.save()
+
             user_profile = UserProfile.objects.get(user=user)
-            user_profile.account_rep = rep_user_profile
-            user_profile.company = document_partner["name"][:100]
+            user_profile.company = rep["company"]
+            user_profile.phone = rep["phone"]
             user_profile.save()
 
-            partner_exists = True
+            print("  ** FOUND - UserId (%s)  UserProfileId (%s)" % (user.pk, user_profile.pk))
 
         except Exception as e:
-            create_partner = True
+            print("  ** NOT FOUND - %s" % (e))
+            create_rep = True
 
-        if create_partner:
-            if document_partner["account_id"] and document_partner["name"]:
-                try:
-                    user = User(username=document_partner["account_id"][:30], is_staff=False, is_active=True,
-                                is_superuser=False)
-                    user.set_password(document_partner["account_id"][:30])
-                    user.first_name = document_partner["name"][:30]
-                    user.save()
-
-                    user_profile = UserProfile(user=user, user_type="DEALER",
-                                               account_id=document_partner["account_id"][:50],
-                                               account_rep=rep_user_profile, company=document_partner["name"][:100])
-                    user_profile.save()
-                    partner_exists = True
-
-                except Exception as e:
-                    return_value = "Import partner (%s) : %s" % (document_partner["account_id"], e)
-            else:
-                return_value = "No account_id or name"
-
-        if partner_exists:
-            # First, lets delete all existing addresses for this partner.
+        if create_rep:
             try:
-                address_list = UserAddress.objects.filter(user_profile=user_profile).all()
-                for address in address_list:
-                    address.delete()
+                user = User(username=rep["account_id"], is_staff=False, is_active=True, is_superuser=False)
+                user.set_password(rep["account_id"])
+                user.first_name = rep["first_name"]
+                user.last_name = rep["last_name"]
+                user.email = rep["email"]
+                user.save()
 
+                user_profile = UserProfile(user=user, user_type="REP", account_id=rep["account_id"], company=rep["company"], phone=rep["phone"])
+                user_profile.save()
+                print("  ** CREATED - UserId (%s)  UserProfileId (%s)" % (user.pk, user_profile.pk))
             except Exception as e:
-                pass
+                print("  ** ERROR - import_rep (%s) : %s" % (rep["account_id"], e))
 
-            # Import BillTo address...
-            if document_partner["billToName"] and document_partner["billToStreet"] and document_partner[
-                "billToCity"] and document_partner["billToRegion"] and document_partner["billToPostalCode"] and \
-                    document_partner["billToCountry"]:
-                try:
-                    user_address = UserAddress(user_profile=user_profile, address_type="BILLTO",
-                                               name=document_partner["billToName"][:200],
-                                               address1=document_partner["billToStreet"][:50],
-                                               city=document_partner["billToCity"][:30],
-                                               state=document_partner["billToRegion"][:30],
-                                               postal_code=document_partner["billToPostalCode"][:9],
-                                               country=document_partner["billToCountry"][:30])
-                    user_address.save()
-                except Exception as e:
-                    pass
-
-            # Import ShipTo addresses...        
-            for ship_to in document_partner["shipTo"]:
-                if ship_to["shipToName"] and ship_to["shipToAddressId"] and ship_to["shipToStreet"] \
-                        and ship_to["shipToCity"] and ship_to["shipToRegion"] and ship_to["shipToPostalCode"] \
-                        and ship_to["shipToCountry"]:
-                    # First see if it exists so we don't import duplicate addresses
-                    try:
-                        user_address = UserAddress.objects.get(user_profile=user_profile, address_type="SHIPTO",
-                                                               address_id=ship_to["shipToAddressId"][:200])
-                    except Exception as e:
-                        try:
-                            user_address = UserAddress(user_profile=user_profile, address_type="SHIPTO",
-                                                       name=ship_to["shipToName"][:200],
-                                                       address_id=ship_to["shipToAddressId"][:200],
-                                                       address1=ship_to["shipToStreet"][:50],
-                                                       city=ship_to["shipToCity"][:30],
-                                                       state=ship_to["shipToRegion"][:30],
-                                                       postal_code=ship_to["shipToPostalCode"][:9],
-                                                       country=ship_to["shipToCountry"][:30])
-                            user_address.save()
-                        except Exception as e:
-                            pass
-
-    except Exception as e:
-        return_value = "Rep not found (%s) : %s" % (document_partner["rep_id"], e)
-
-    return return_value
-
-
-def delete_document_list(doc_sys_list):
-    return_flag = True
-    try:
-        client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-        returnValue = client.service.DeleteDocuments(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, doc_sys_list)
-        if isinstance(returnValue, unicode):
-            returnValue = returnValue.encode("utf-8")
-
-    except Exception as e:
-        logger.error("delete_document_list: %s" % (e))
-        return_flag = False
-
-    return return_flag
-
-
-def get_document_list_json(request, doc_type):
-    return_list = []
-    status = "All"
-    dateNow = datetime.now()
-    fromDate = datetime.strptime('1/1/%s 12:01AM' % (dateNow.year), '%m/%d/%Y %I:%M%p')
-    toDate = dateNow
-
-    client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-    returnValue = client.service.GetDocumentList2(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, status, doc_type,
-                                                  settings.EBRIDGE_PARTNER, fromDate, toDate)
-
-    if isinstance(returnValue, unicode):
-        returnValue = returnValue.encode("utf-8")
-
-    doc = etree.fromstring(returnValue)
-
-    if len(doc) > 1:
-        documentList = doc[1]
-
-        return_list.append({
-            "doc_num": documentList.get("doc_num"),
-            "doc_sys_no": documentList.get("doc_sys_no"),
-            "tran_datetime": documentList.get("tran_datetime"),
-            "doc_date": documentList.get("doc_date")
-        })
-        for document in documentList:
-            return_list.append({
-                "doc_num": document.get("doc_num"),
-                "doc_sys_no": document.get("doc_sys_no"),
-                "tran_datetime": document.get("tran_datetime"),
-                "doc_date": document.get("doc_date")
-            })
-
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
-
-
-def get_document(request, doc_type, doc_sys_no):
-    if doc_type.lower() == "prodat":
-        return get_product(request, doc_sys_no)
-
-    if doc_type.lower() == "850":
-        return get_order(request, doc_sys_no)
-
-
-def get_order(request, doc_sys_no):
-    returnObject = {}
-
-    client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-    returnValue = client.service.GetDocument(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, doc_sys_no)
-    if isinstance(returnValue, unicode):
-        returnValue = returnValue.encode("utf-8")
-
-    returnValue = returnValue.replace("UTF-16", "utf-8")
-
-    return HttpResponse(returnValue, mimetype="application/xml")
-
-
-def get_product(request, doc_sys_no):
-    returnObject = {}
-
-    client = Client(settings.EBRIDGE_WSDL, location=settings.EBRIDGE_URL)
-
-    returnValue = client.service.GetDocument(settings.EBRIDGE_LOGIN, settings.EBRIDGE_PASSWORD, doc_sys_no)
-    if isinstance(returnValue, unicode):
-        returnValue = returnValue.encode("utf-8")
-
-    returnValue = returnValue.replace("UTF-16", "utf-8")
-    my_xml = etree.XML(returnValue)
-
-    if returnValue:
-        documents = etree.XML(returnValue)
-
-        catalogData = documents[4]
-
-        productId = None
-        productName = None
-        description = None
-        price = 0
-        costPrice = 0
-        retailPrice = 0
-        inventory = 0
-
-        for catalogElement in catalogData:
-            # Product info
-            if catalogElement.tag.lower().endswith("product"):
-                for productElement in catalogElement:
-                    if productElement.tag.lower().endswith("productid"):
-                        productId = productElement.text
-                    if productElement.tag.lower().endswith("productname"):
-                        productName = productElement.text
-                    if productElement.tag.lower().endswith("longdescription"):
-                        description = productElement.text
-
-            # Pricing info
-            if catalogElement.tag.lower().endswith("pricing"):
-                for pricingElement in catalogElement:
-                    if pricingElement[1].text.lower().endswith("cost_price"):
-                        costPrice = pricingElement[0].text
-                    if pricingElement[1].text.lower().endswith("price"):
-                        price = pricingElement[0].text
-                    if pricingElement[1].text.lower().endswith("retail_price"):
-                        retailPrice = pricingElement[0].text
-
-            # Inventory info
-            if catalogElement.tag.lower().endswith("inventoryreportdetail"):
-                for inventoryElement in catalogElement:
-                    if inventoryElement.tag.lower().endswith("totalinventoryquantity"):
-                        for quantityElement in inventoryElement:
-                            if quantityElement.tag.lower().endswith("quantityvalue"):
-                                inventory = quantityElement.text
-
-        returnObject = {
-            "product_id": productId,
-            "product_name": productName,
-            "description": description,
-            "price": price,
-            "cost_price": costPrice,
-            "retail_price": retailPrice,
-            "inventory": inventory,
-        }
-
-    return HttpResponse(json.dumps(returnObject), mimetype="application/json")
+    return HttpResponse(json.dumps(rep_list), content_type="application/json")
 
 
 # ------------------------------------------
@@ -720,7 +213,7 @@ def api_model_inventory_list(request, dealer_id):
         for model_inventory in ModelInventory.objects.filter(user_profile=user_profile):
             return_list.append(model_inventory.convert_to_dict())
 
-        return HttpResponse(json.dumps(return_list), mimetype="application/json")
+        return HttpResponse(json.dumps(return_list), content_type="application/json")
 
     except Exception as e:
         logger.error("api_dealer_model_inventory: %s" % (e))
@@ -735,7 +228,7 @@ def api_model_inventory_create(request, dealer_id):
             user_profile = UserProfile.objects.get(pk=dealer_id)
             return_object = user_profile.convert_to_dict()
 
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_dealer_model_inventory: %s" % (e))
@@ -772,7 +265,7 @@ def api_model_inventory(request, dealer_id, model_inventory_id):
         logger.error("api_model_inventory: %s" % (e))
         return HttpResponseServerError("Error getting model data!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object, separators=(',', ':')), content_type="application/json")
 
 
 # ------------------------------------------
@@ -796,7 +289,7 @@ def api_inventory(request):
     except Exception as e:
         logger.error("api_inventory: %s" % (e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 # ------------------------------------------
@@ -876,7 +369,7 @@ def api_orders(request):
     except Exception as e:
         logger.error("api_orders: %s" % (e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_order(request, order_id):
@@ -899,7 +392,7 @@ def api_order(request, order_id):
         logger.error("api_order: %s" % (e))
         return HttpResponseServerError("Error getting order data!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object, separators=(',', ':')), content_type="application/json")
 
 
 def api_order_details(request, order_id):
@@ -914,7 +407,7 @@ def api_order_details(request, order_id):
         logger.error("api_order_details: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object, separators=(',', ':')), content_type="application/json")
 
 
 def api_order_detail(request, order_id, order_detail_id):
@@ -928,7 +421,7 @@ def api_order_detail(request, order_id, order_detail_id):
         logger.error("api_order_details: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object, separators=(',', ':')), content_type="application/json")
 
 
 def api_order_data(request, order_id):
@@ -960,12 +453,12 @@ def api_order_data(request, order_id):
         logger.error("api_order_data: %s" % (e))
         return HttpResponseServerError("Error getting order data: %s" % (e))
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object, separators=(',', ':')), content_type="application/json")
 
 
 def api_order_new(request):
     try:
-        user_profile = request.user.get_profile()
+        user_profile = request.user.userprofile
 
         dealer_id = int(request.GET.get("dealer_id", "0"))
         dealer = UserProfile.objects.get(pk=dealer_id)
@@ -1026,7 +519,7 @@ def api_order_new(request):
         order.po_number = "%s-%s" % (dealer.account_id, order.pk)
         order.save()
 
-        return HttpResponse(json.dumps({"id": order.pk}), mimetype="application/json")
+        return HttpResponse(json.dumps({"id": order.pk}), content_type="application/json")
 
     except Exception as e:
         logger.error("api_order_new: %s" % (e))
@@ -1037,7 +530,7 @@ def api_order_duplicate(request):
     try:
         order_id = int(request.GET.get("order_id", "0"))
         return_object = order_duplicate(order_id)
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_order_duplicate: %s" % (e))
@@ -1125,7 +618,7 @@ def api_order_save(request, order_id):
             # print(order_dict)
             # print("--------------------------------------")
 
-            return HttpResponse(json.dumps(order_dict), mimetype="application/json")
+            return HttpResponse(json.dumps(order_dict), content_type="application/json")
 
         except Exception as e:
             logger.error("api_order_save: %s" % (e))
@@ -1143,18 +636,18 @@ def api_order_submit(request, order_id):
 
         email_sent = email_submitted_order(request, order_id)
 
-        return HttpResponse(json.dumps({"status": "success"}), mimetype="application/json")
+        return HttpResponse(json.dumps({"status": "success"}), content_type="application/json")
     else:
         return HttpResponseServerError("Failed to submit order!")
 
 
 def api_order_email(request, order_id):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
     email = user_profile.user.email
 
     if order_email(request, email, order_id):
         return HttpResponse(json.dumps({"status": "success", "message": "Email has been sent to %s" % (email)}),
-                            mimetype="application/json")
+                            content_type="application/json")
     else:
         return HttpResponseServerError("Failed to email order!")
 
@@ -1252,7 +745,7 @@ def order_duplicate(order_id):
 def api_order_sources(request):
     order_sources = []
     try:
-        user_profile = request.user.get_profile()
+        user_profile = request.user.userprofile
         # if user_profile.user_type == "DEALER":
         #    source = OrderSource(description='Buyer', value='BUYER', sort_order=1, active=True)
         #    order_sources.append(source.convert_to_dict())
@@ -1261,7 +754,7 @@ def api_order_sources(request):
         for source in sources:
             order_sources.append(source.convert_to_dict())
 
-        return HttpResponse(json.dumps(order_sources), mimetype="application/json")
+        return HttpResponse(json.dumps(order_sources), content_type="application/json")
 
     except Exception as e:
         logger.error("api_order_sources: %s" % (e))
@@ -1275,7 +768,7 @@ def api_order_prebook_options(request):
                                                                                                 "description")
         for option in options:
             pre_book_options.append(option.convert_to_dict())
-        return HttpResponse(json.dumps(pre_book_options), mimetype="application/json")
+        return HttpResponse(json.dumps(pre_book_options), content_type="application/json")
 
     except Exception as e:
         logger.error("api_order_sources: %s" % (e))
@@ -1293,7 +786,7 @@ def product_item_list(request, product_style_id):
     for item in item_list:
         return_list.append(item.convert_to_dict())
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def product_item_grid(request, product_style_id):
@@ -1327,7 +820,7 @@ def product_item_grid(request, product_style_id):
             "skus": skus
         })
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 # ------------------------------------------
@@ -1341,7 +834,7 @@ def product_sku_list(request, product_item_id):
     for sku in sku_list:
         return_list.append(sku.convert_to_dict())
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def sku_exists(sku):
@@ -1363,7 +856,7 @@ def api_product_styles(request):
         for style in ProductStyle.objects.filter(product_items__product_skus__active=True).distinct().order_by(
                 "style_sku"):
             return_object.append(style.convert_to_dict())
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_product_styles: %s" % (e))
@@ -1374,7 +867,7 @@ def api_product_style(request, product_style_id):
     try:
         style = ProductStyle.objects.get(pk=product_style_id)
         return_object = style.convert_to_dict()
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_product_style: %s" % (e))
@@ -1384,7 +877,7 @@ def api_product_style(request, product_style_id):
 def api_product_style_detail(request, product_style_id):
     try:
         return_object = product_style_detail(product_style_id)
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_product_style_detail: %s" % (e))
@@ -1451,38 +944,7 @@ def product_style_get_id(sku):
         return 0
 
 
-# ------------------------------------------
-#                  REPS
-# ------------------------------------------
-def api_reps(request):
-    return_list = []
-    try:
-        user_profile = request.user.get_profile()
-        if user_profile.user_type == "REP":
-            return_list.append(user_profile.convert_to_dict())
-        elif user_profile.user_type == "DEALER":
-            rep_user_profile = UserProfile.objects.get(pk=user_profile.account_rep.pk)
-            return_list.append(rep_user_profile.convert_to_dict())
-        else:
-            for rep_user_profile in UserProfile.objects.filter(user_type="REP").order_by("account_id"):
-                return_list.append(rep_user_profile.convert_to_dict())
 
-    except Exception as e:
-        logger.error("api_reps: %s" % (e))
-
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
-
-
-def api_rep(request, rep_id):
-    return_object = {}
-    try:
-        dealer = UserProfile.objects.get(pk=rep_id)
-        return_object = dealer.convert_to_dict()
-
-    except Exception as e:
-        logger.error("api_rep: %s" % (e))
-
-    return HttpResponse(json.dumps(return_object), mimetype="application/json")
 
 
 # ------------------------------------------
@@ -1508,7 +970,7 @@ def user_profile_terms(request):
     except Exception as e:
         logger.error("user_profile_terms: %s" % (e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def user_profile_term(request):
@@ -1533,7 +995,7 @@ def user_profile_term(request):
         logger.error("user_profile_term: %s" % (e))
         return HttpResponseServerError("Error accepting terms")
 
-    return HttpResponse(json.dumps(return_object), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 # ------------------------------------------
@@ -1544,7 +1006,7 @@ def api_user_profiles(request):
         return_object = []
         for user_profile in UserProfile.objects.all().order_by("company"):
             return_object.append(user_profile.convert_to_dict())
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_user_profiles: %s" % (e))
@@ -1555,7 +1017,7 @@ def api_user_profile(request, user_profile_id):
     try:
         user_profile = UserProfile.objects.get(pk=user_profile_id)
         return_object = user_profile.convert_to_dict()
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_user_profile: %s" % (e))
@@ -1569,7 +1031,7 @@ def api_user_profile_addresses(request, user_profile_id):
         for user_address in UserAddress.objects.filter(user_profile=user_profile):
             return_object.append(user_address.convert_to_dict())
 
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_user_profile_addresses: %s" % (e))
@@ -1580,7 +1042,7 @@ def api_user_profile_address(request, user_profile_id, user_address_id):
     try:
         user_address = UserAddress.objects.get(pk=user_address_id)
         return_object = user_address.convert_to_dict()
-        return HttpResponse(json.dumps(return_object), mimetype="application/json")
+        return HttpResponse(json.dumps(return_object), content_type="application/json")
 
     except Exception as e:
         logger.error("api_user_profile_address: %s" % (e))
@@ -1629,21 +1091,21 @@ def email_submitted_order(request, order_id):
             "grand_quantity_total": grand_quantity_total,
         }
 
-    returnValue = True
+    return_value = True
     email_subject = "New Cobian Portal Order"
     email_body, email_html = make_both_emails("emails/customer_service_order_email", data_object,
                                               context_instance=RequestContext(request))
 
     # Send order to customer service
-    returnValue = send_email_safe(email_subject, email_body, settings.EMAIL_ORDERS, email_html)
+    return_value = send_email_safe(email_subject, email_body, settings.EMAIL_ORDERS, email_html)
 
     # Send emails to rep and dealer
     dealer = order.user_profile;
     rep = dealer.account_rep;
     email_list = [dealer.user.email, rep.user.email]
-    returnValue = send_email_safe(email_subject, email_body, email_list, email_html)
+    return_value = send_email_safe(email_subject, email_body, email_list, email_html)
 
-    return returnValue
+    return return_value
 
 
 def order_email(request, email, order_id):
@@ -1687,4 +1149,4 @@ def email_test(request):
 
     return_object["returnValue"] = return_value
 
-    return HttpResponse(json.dumps(return_object), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")

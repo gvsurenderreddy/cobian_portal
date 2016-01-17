@@ -1,7 +1,9 @@
 {% extends "main/base.html" %}
 
+{% load staticfiles %}
+
 {% block extra_css %}
-	
+	<link href="{% static 'main/css/index.css' %}" rel="stylesheet" media="screen">
 {% endblock extra_css %}
 
 {% block breadcrumb_content %}
@@ -9,11 +11,54 @@
 {% endblock breadcrumb_content %}
 
 {% block main_content %}
-	<h4>Index</h4>
+	{% include "snippets/message.html" %}
+	
+	<div class="row">
+		<div class="col-sm-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">Cobian Business News</div>
+				<div class="panel-body">
+					{% for message in dashboardMessages %}
+						<p><strong>{{message.title}}</strong> - {{ message.message_date|date:"M d, Y" }}<br>{% autoescape off %}{{message.message}}{% endautoescape %}</p>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-1">&nbsp;</div>
+		<div class="col-sm-5">
+			<img src="{% static 'themes/' %}{{THEME}}/images/Logo100X100.jpg">
+			<form class="form-horizontal" role="form">
+				<div id="rep_view" class="form-group">
+					<label for="rep">Select a Rep</label>
+					<select id="rep" class="form-control"></select>
+			  	</div>
+				
+				<div id="dealer_view" class="form-group">
+					<label for="dealer">Select a Dealer</label>
+					<select id="dealer" class="form-control"></select>
+			  	</div>
+				
+				<div id="action_view" class="form-group">
+					<label for="action">Select an Action</label>
+					<select id="action" name="action" class="form-control">
+		            	<option value="ORDER">Place an Order</option>
+						<option value="VIEW">View Saved and Previous Orders</option>
+					</select>
+			  	</div>
+				
+			  	<div id="button_view" class="form-group">
+					<div id="submit" class="btn btn-success btn-sm">Go</div>
+			  	</div>
+			</form>
+		</div>
+	</div>
 
 {% endblock main_content %}
 
 {% block extra_js %}
-
+	<script type="text/javascript">
+		var userType = "{{user_profile.user_type}}";
+	</script>
+	<script type="text/javascript" src="{% static 'main/js/index.js' %}"></script>
 {% endblock extra_js %}
 

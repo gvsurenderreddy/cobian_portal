@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+{% load i18n %}
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	{% block head_block %}{% endblock head_block %}
+</head>
+
+<body>
+{% if url %}
+    <div style="font-size:0.8em; margin-top:0.2em;margin-bottom:0;padding-bottom:0;">
+        {% trans "Having trouble viewing this email?" %} <a href="{{url}}">{% trans "Click here" %}</a> {% trans "to view it in a web browser." %}
+    </div>
+{% endif %}
+	
+<table width="100%" cellpadding="10" cellspacing="0" bgcolor='#fff' border="0" >
+	<tr>
+		<td valign="top" align="center">
+		    <table width="650" cellpadding="10" cellspacing="0" bgcolor="#ffffff" style="text-align:left;">
+		        <tr>
+		            <td align="left" valign="middle">
+		                <a href="{{BASE_URL}}">
+		        			<img src="{{image_path}}images/logo_img.png" alt="Cobian Portal" BORDER="0"/>
+		        		</a>
+		            </td>
+		        </tr>
+		    </table>
+    
+		    <table width="650" cellpadding="5" cellspacing="0" bgcolor="#ffffff" border="0" style="text-align:left">
+		        <tr>
+		            <td align="left" valign="middle" style="background-color:#FFFFFF;">
+		                {% block body %}
+		                {% endblock body %}
+		            </td>
+		        </tr>
+		    </table>
+    
+		    <table width="650" cellpadding="5" cellspacing="0" bgcolor="#ffffff" border="0" style="text-align:left">
+		        <tr>
+		            <td align="left" valign="middle">
+		                &nbsp;
+		            </td>
+		        </tr>
+		    </table>
+		</td>
+	</tr>
+</table> 
+</body>
+</html>

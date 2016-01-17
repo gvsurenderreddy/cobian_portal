@@ -1,0 +1,104 @@
+{% extends 'emails/email_base.html' %}
+{% load humanize %}
+
+{% block head_block %}
+	<style type="text/css">
+		.detail-table tr:nth-child(odd)  { background-color:#eee; }
+		.detail-table tr:nth-child(even) { background-color:#fff; }
+	</style>
+{% endblock head_block %}
+
+{% block body %}
+	<table cellpadding="3" width="100%">
+		<tr>
+	        <td width="20%" align="right">PO#:</td>
+	        <td width="80%"><strong>{{order.po_number}}</strong></td>
+		</tr>
+	    <tr>
+	        <td align="right">Submit Date:</td>
+	        <td><strong>{{order.status_date|date:"M d, Y"}}</strong></td>
+	    </tr>
+	    <tr>
+	        <td align="right">Order Source:</td>
+	        <td><strong>{{order.order_source}}</strong></td>
+	    </tr>
+	    {% if order.order_type == "AT-ONCE" %}
+    	    <tr>
+    	        <td align="right">Order Type:</td>
+    	        <td><strong>At Once Order</strong></td>
+    	    </tr>	    
+    		<tr>
+    	        <td align="right">Ship Date:</td>
+    	        <td><strong>{{order.prebook_date|date:"SHORT_DATE_FORMAT"}}</strong></td>
+    		</tr>
+    		<tr>
+    	        <td align="right">Cancel Date:</td>
+    	        <td><strong>{{order.cancel_date|date:"SHORT_DATE_FORMAT"}}</strong></td>
+    		</tr>
+    	{% endif %}
+    	
+    	{% if order.order_type == "PRE-BOOK" %}
+    	    <tr>
+    	        <td align="right">Order Type:</td>
+    	        <td><strong>Pre-Book Order</strong></td>
+    	    </tr>	    
+    		<tr>
+    	        <td align="right">Pre-Book Date:</td>
+    	        <td><strong>{{order.pre_book_option}}</strong></td>
+    		</tr>
+    	{% endif %}
+    	
+	    <tr>
+	        <td align="right" valign="top">Notes:</td>
+	        <td>{{order.notes}}</td>
+	    </tr>
+	</table>
+	
+	<br>
+	
+	<table cellpadding="3" width="100%">
+		<tr>
+			<td width="15%" align="right" valign="top">BILL TO:</td>
+			<td width="35%" valign="top">
+				<strong>{{order.user_profile.account_id}}</strong><br>
+			    <strong>{{order.billto_name}}</strong><br>
+			    <strong>{{order.billto_address1}} {% if order.billto_address2 %}{{order.billto_address2}}{% endif %}</strong><br>
+			    <strong>{{order.billto_city}}, {{order.billto_state}}&nbsp;&nbsp;{{order.billto_postal_code}}</strong>
+			</td>
+			<td width="15%" align="right" valign="top">SHIP TO:</td>
+			<td width="35%" valign="top">
+				<strong>{{order.address_id}}</strong><br>
+			    <strong>{{order.shipto_name}}</strong><br>
+			    <strong>{{order.shipto_address1}} {% if order.shipto_address2 %}{{order.shipto_address2}}{% endif %}</strong><br>
+			    <strong>{{order.shipto_city}}, {{order.shipto_state}}&nbsp;&nbsp;{{order.shipto_postal_code}}</strong><br>
+			</td>
+		</tr>
+	</table>
+
+	<br>
+	
+	<table class="detail-table" cellpadding="3" width="100%" class="table table-bordered">
+		<tr>
+			<td width="7%" align="center">Qty</td>
+			<td width="20%" align="left">Sku</td>
+			<td width="48%" align="left">Description</td>
+			<td width="12%" align="right">Price</td>
+			<td width="13%" align="right">Total</td>
+		</tr>
+		{% for order_detail in order_details %}
+			<tr>
+				<td align="center">{{order_detail.quantity}}</td>
+				<td align="left">{{order_detail.sku}}</td>
+				<td align="left">{{order_detail.style}} - {{order_detail.size}} - {{order_detail.description}}</td>
+				<td align="right">${{order_detail.price|floatformat:2|intcomma}}</td>
+				<td align="right">${{order_detail.total|floatformat:2|intcomma}}</td>
+			</tr>
+		{% endfor%}
+		<tr><td colspan=5>&nbsp;</td></tr>
+		<tr>
+			<td align="center"><strong>{{grand_quantity_total|intcomma}}</strong></td>
+			<td colspan=3 align="right"><strong>Grand Total</strong></td>
+			<td align="right"><strong>${{grand_total|floatformat:2|intcomma}}</strong></td>
+		</tr>
+	</table>
+{% endblock body %}

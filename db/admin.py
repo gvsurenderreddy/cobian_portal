@@ -209,11 +209,10 @@ class ProductStyleAdmin(admin.ModelAdmin):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("pk", "account_id", "company", "user_type", "terms_uploaded", "terms_accepted")
-    list_filter = ("account_id", "company", "user_type", "terms_uploaded", "terms_accepted")
+    list_display = ("pk", "account_id", "company", "user_type",)
+    list_filter = ("user_type",)
     search_fields = ("id", "account_id", "company")
-    #readonly_fields = ("account_id", "user", "user_type", "account_rep", )
-    ordering = ("account_id",)
+    ordering = ("user_type", "account_id",)
     inlines = (UserAddressInline, UserProfileInline, BuyerInline)
     form = UserProfileForm
 

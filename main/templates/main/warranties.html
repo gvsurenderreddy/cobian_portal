@@ -1,0 +1,104 @@
+{% extends "main/base.html" %}
+
+{% load staticfiles %}
+
+{% block extra_css %}
+	<link rel="stylesheet" href="{% static 'libs/daterangepicker/daterangepicker-bs3.css' %}" type="text/css">
+	<link rel="stylesheet" href="{% static 'libs/backgrid/lib/backgrid.css' %}" />
+	<link rel="stylesheet" href="{% static 'libs/backgrid/extensions/paginator/backgrid-paginator.css' %}" />
+	<link rel="stylesheet" href="{% static 'libs/backgrid/extensions/select-all/backgrid-select-all.css' %}" />
+	<link rel="stylesheet" href="{% static 'main/css/backgrid-custom.css' %}">
+	<link rel="stylesheet" href="{% static 'main/css/warranties.css' %}" type="text/css">
+{% endblock extra_css %}
+
+{% block breadcrumb_content %}
+    <li><a href="/">Home</a></li>
+    <li class="active">Warranties</li>
+{% endblock breadcrumb_content %}
+
+{% block modal_content %}
+	<div id="remove_modal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				    <h4 class="modal-title">Remove Warranty Claim</h4>
+				</div>
+				<div class="modal-body">
+					<p>Are you sure you want to remove warranty claim?</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">No</button>
+					<button class="btn btn-danger">Yes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock modal_content %}
+
+{% block main_content %}
+	<div class="menu-container">
+		<div id="status_view" class="menu-item">
+			<label class="custom-select">
+				<span>Select status</span>
+				<select></select>
+			</label>
+		</div>
+		<div id="date_view" class="menu-item">
+			<label class="custom-select">
+				<span>Select date</span>
+				<select>
+					<option value="ALL">All Dates</option>
+					<option value="RANGE">Date Range</option>
+				</select>
+			</label>
+			<input type="text" name="daterange" id="daterange" class="form-control" value="" />
+		</div>
+		<div id="button_view" class="btn btn-xs btn-success menu-item">View Claims</div>
+		<div class="clearfix"></div>
+	</div>
+
+	<div id="grid_container">
+		<div id="grid_helper" class="col-md-8"></div>
+		<div id="grid_filter" class="col-md-4"></div>
+		<div id="grid-wrapper" class="col-md-12">
+			<div id="grid" class=""></div>
+		</div>
+		<div class="clearfix"></div>
+	</div>
+{% endblock %}
+
+{% block extra_js %}
+	<script src="{% static 'libs/moment/min/moment.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/daterangepicker/daterangepicker.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backbone/backbone-pageable.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid/lib/backgrid.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid/extensions/paginator/backgrid-paginator.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid-select-all/backgrid-select-all.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/backgrid-filter/backgrid-filter.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'libs/accounting/accounting.min.js' %}" type="text/javascript"></script>
+	<script src="{% static 'main/js/backgrid-custom.js' %}" type="text/javascript"></script>
+	<script type="text/javascript">
+		var App = {
+			Model: {},
+			Collection: {},
+			View: {},
+			Grid: {},
+			status: "ALL",
+			dateRange: "ALL",
+			startDate: moment().format('l'),
+			endDate: moment().format('l'),
+			userType: "{{user_profile.user_type}}",
+			userReceiver: false,
+			userAuthorizer: false
+		}
+
+		if ("{{user_profile.warranty_receiver}}" == "True") { App.userReceiver = true }
+		if ("{{user_profile.warranty_authorizer}}" == "True") { App.userAuthorizer = true }
+		if (App.userType == "ADMIN") {
+			App.userAuthorizer = true;
+		}
+	</script>
+	<script src="{% static 'main/js/warranties.js' %}" type="text/javascript"></script>
+{% endblock extra_js %}
+

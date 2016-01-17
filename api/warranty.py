@@ -11,12 +11,11 @@ from db.models.warranty_style import WarrantyStyle
 from db.models.data_option import DataOption
 from main.utils import make_html_email, send_email
 
-# JSON
-import json
+import ujson as json
 import logging
 import random
 
-logger = logging.getLogger("portal.api.warranty")
+logger = logging.getLogger("api.warranty")
 
 
 def api_warranties(request):
@@ -46,7 +45,7 @@ def api_warranties(request):
     except Exception as e:
         logger.error("api_warranties: {}".format(e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranties_warranty(request, warranty_id):
@@ -66,7 +65,7 @@ def api_warranties_warranty(request, warranty_id):
         logger.error("api_warranties_warranty: {}".format(e))
         return HttpResponseServerError("Error getting warranty data!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 def api_warranty_colors(request):
@@ -80,7 +79,7 @@ def api_warranty_colors(request):
     except Exception as e:
         logger.error("api_warranty_colors: {}".format(e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranty_defects(request):
@@ -94,7 +93,7 @@ def api_warranty_defects(request):
     except Exception as e:
         logger.error("api_warranty_defects: {}".format(e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranty_history(request, warranty_id):
@@ -108,7 +107,7 @@ def api_warranty_history(request, warranty_id):
     except Exception as e:
         logger.error("api_warranty_history: {}".format(e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranty_styles(request):
@@ -122,11 +121,11 @@ def api_warranty_styles(request):
     except Exception as e:
         logger.error("api_warranty_styles: %s" % (e))
 
-    return HttpResponse(json.dumps(return_list), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranty(request, warranty_id):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
 
     return_object = {}
 
@@ -219,14 +218,14 @@ def api_warranty(request, warranty_id):
             return_object = {"status": "deleted"}
 
     except Exception as e:
-        logger.error("api_warranty: %s" % (e))
+        logger.error("api_warranty: {}".format(e))
         return HttpResponseServerError("Error getting warranty data!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 def api_warranty_status(request, warranty_id):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
 
     return_object = {}
 
@@ -263,7 +262,7 @@ def api_warranty_status(request, warranty_id):
         logger.error("api_warranty_set_status: %s" % (e))
         return HttpResponseServerError("Error saving warranty status!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 def api_warranty_images(request, warranty_id):
@@ -278,11 +277,11 @@ def api_warranty_images(request, warranty_id):
         logger.error("api_warranty_images: %s" % (e))
         return HttpResponseServerError("Error getting warranty images!")
 
-    return HttpResponse(json.dumps(return_list, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")
 
 
 def api_warranty_images_image(request, warranty_id, warranty_image_id):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
 
     return_object = {}
 
@@ -307,11 +306,11 @@ def api_warranty_images_image(request, warranty_id, warranty_image_id):
         logger.error("api_warranty_images_image: %s" % (e))
         return HttpResponseServerError("Error getting warranty images!")
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 def send_pre_authorized_email(request, warranty):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
     email = user_profile.user.email
 
     emails = [email, warranty.email]
@@ -369,11 +368,11 @@ def api_warranty_create_data(request):
         data_option.save()
         return_object["damages"].append(data_option.convert_to_dict())
 
-    return HttpResponse(json.dumps(return_object, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_object), content_type="application/json")
 
 
 def api_warranty_create_claims(request):
-    user_profile = request.user.get_profile()
+    user_profile = request.user.userprofile
 
     count = int(request.GET.get("count", "10"))
 
@@ -387,7 +386,7 @@ def api_warranty_create_claims(request):
     for i in range(1, count + 1):
         year = random.randint(2015, 2016)
         month = 1
-        day = random.randint(1, 9)
+        day = random.randint(1, 17)
         if year == 2015:
             month = random.randint(1, 12)
             day = random.randint(1, 28)
@@ -429,4 +428,4 @@ def api_warranty_create_claims(request):
                                                action="Set status to {}".format(warranty_dict["statusDescription"]))
             warranty_history.save()
 
-    return HttpResponse(json.dumps(return_list, separators=(',', ':')), mimetype="application/json")
+    return HttpResponse(json.dumps(return_list), content_type="application/json")

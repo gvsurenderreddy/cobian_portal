@@ -4,7 +4,7 @@ from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
 
-logger = logging.getLogger("portal.main.utils")
+logger = logging.getLogger("main.utils")
 
 
 def send_email_safe(email_subject, email_body, rec, html_version=None, bcc=[]):

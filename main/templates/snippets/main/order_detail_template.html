@@ -1,0 +1,39 @@
+<script type="text/template" id="order_detail_template">
+	<div class="panel-heading" role="tab" id="heading_shipto">
+		<h4 class="panel-title">
+			<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapse_details" aria-expanded="false" aria-controls="collapse_details">
+				<span>Order Details</span>
+			</a>
+		</h4>
+	</div>
+	<div id="collapse_details" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading_details">
+		<div class="panel-body">
+			<table class="table table-bordered">
+				<tbody>
+					<tr class="active">
+						<td align="center">Qty</td>
+						<td align="center">&nbsp;</td>
+						<td align="center">Sku</td>
+						<td align="center">Style</td>
+						<td align="center">Description</td>
+						<td align="center">Size</td>
+						<td align="center">Price</td>
+						<td align="center">Total</td>
+					</tr>
+					<% orderDetails.each(function(orderDetail) { %>  
+						<tr>
+							<td align="center" style="vertical-align: middle"><%= orderDetail.attributes.quantity %></td>
+							<td align="center" style="vertical-align: middle"><a href="/media/products/<%=orderDetail.attributes.itemNumber.toLowerCase()%>.jpg" target="_blank"><img src="/media/products/<%=orderDetail.attributes.itemNumber.toLowerCase()%>.jpg" width="120" class="img-responsive" /></a></td>
+							<td align="center" style="vertical-align: middle"><%= orderDetail.attributes.sku %></td>
+							<td align="center" style="vertical-align: middle"><%= orderDetail.attributes.style %></td>
+							<td align="center" style="vertical-align: middle"><%= orderDetail.attributes.description %></td>
+							<td align="center" style="vertical-align: middle"><%= orderDetail.attributes.size %></td>
+							<td align="center" style="vertical-align: middle"><%= accounting.formatMoney(orderDetail.attributes.price) %></td>
+							<td align="center" style="vertical-align: middle"><%= accounting.formatMoney(orderDetail.attributes.quantity*orderDetail.attributes.price) %></td>
+						</tr>
+					<% }); %>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</script>

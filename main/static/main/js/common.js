@@ -51,3 +51,22 @@ function hideLoading() {
     clearTimeout(showLoadingTimer);
     $('#loading_overlay, #loading_dim').remove();
 }
+
+function unixTimeToString(unixTimeStamp, showTime) {
+    var integerTime = parseInt(unixTimeStamp) * 1000;
+
+    convertTime = new Date(integerTime);
+    var month = convertTime.getMonth() + 1,
+        day = convertTime.getDate(),
+        year = convertTime.getFullYear(),
+        hour = convertTime.getHours(),
+        minute = convertTime.getMinutes(),
+        seconds = convertTime.getSeconds(),
+        returnDate = month + "/" + day + "/" + year;
+
+    if (showTime) {
+        returnDate += " " + hour + ":" + minute + ":" + seconds;
+    }
+
+    return returnDate
+}

@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from easy_thumbnails.files import get_thumbnailer
+from tagging.fields import TagField
 
 
 class MediaFile(models.Model):
@@ -17,6 +18,7 @@ class MediaFile(models.Model):
     file_extension = models.CharField("File Extension", max_length=10, null=True)
     description = models.CharField("Description", max_length=255, null=True)
     uploaded = models.DateField(auto_now=False, auto_now_add=True)
+    tags = TagField()
 
     def __str__(self):
         return self.title

@@ -34,6 +34,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'easy_thumbnails',
+    'tagging',
     'api',
     'db',
     'main',
